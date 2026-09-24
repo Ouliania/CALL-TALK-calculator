@@ -1,0 +1,19 @@
+{
+  "name": "calltalk-roi-calculator",
+  "version": "1.0.0",
+  "description": "Интерактивный калькулятор окупаемости B2B-аутрича Call-Talk с тарифными планами, расчетом MQL/SQL (x3) и стресс-тестом окупаемости",
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve .",
+    "build": "echo 'Static build ready'"
+  },
+  "keywords": [
+    "calltalk",
+    "roi-calculator",
+    "b2b",
+    "outreach",
+    "leadgen"
+  ],
+  "author": "Call-Talk (Игорь Ермолаев)",
+  "license": "UNLICENSED"
+}
