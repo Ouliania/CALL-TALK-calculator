@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Интерактивный калькулятор окупаемости B2B-аутрича Call-Talk с тарифными планами, расчетом MQL/SQL (x3) и стресс-тестом окупаемости",
   "scripts": {
-    "dev": "npx serve .",
-    "start": "npx serve .",
-    "build": "echo 'Static build ready'"
+    "build": "mkdir -p public && cp index.html styles.css app.js public/",
+    "dev": "npx serve public",
+    "start": "npx serve public"
   },
   "keywords": [
     "calltalk",
