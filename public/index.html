@@ -219,16 +219,60 @@
           </div>
 
           <div id="ltvSubpanel" style="display: none; margin-top: 10px;">
-            <div class="field-header">
-              <span>Повторных сделок в год</span>
-              <span id="ltvMultiplierDisplay" class="field-val-badge">+2 заказа</span>
+            <!-- Переключатель режима повторных продаж -->
+            <div class="ltv-mode-tabs">
+              <button type="button" class="ltv-mode-tab active" id="ltvModeCoeffBtn" data-mode="coeff">Коэффициент (разовые покупки)</button>
+              <button type="button" class="ltv-mode-tab" id="ltvModeSubBtn" data-mode="sub">Подписка / регулярные поставки</button>
             </div>
-            <input type="range" id="ltvSlider" min="1" max="15" step="1" value="2">
-            <div class="quick-pills">
-              <button type="button" class="pill-btn pill-ltv active" data-ltv="2">+2 заказа</button>
-              <button type="button" class="pill-btn pill-ltv" data-ltv="3">+3 заказа</button>
-              <button type="button" class="pill-btn pill-ltv" data-ltv="5">+5 заказов</button>
-              <button type="button" class="pill-btn pill-ltv" data-ltv="12">+12 заказов</button>
+
+            <!-- Режим 1: Коэффициент повторных покупок (для опта, производства, услуг) -->
+            <div id="ltvCoeffView" style="margin-top: 10px;">
+              <div class="field-header">
+                <span>Коэффициент повторных покупок</span>
+                <span id="ltvCoeffDisplay" class="field-val-badge teal">1.3×</span>
+              </div>
+              <div class="input-row">
+                <div class="currency-input-wrapper">
+                  <input type="number" id="ltvCoeffInput" class="number-input" min="1.0" max="3.0" step="0.05" value="1.3">
+                  <span class="input-suffix">коэфф.</span>
+                </div>
+              </div>
+              <input type="range" id="ltvCoeffSlider" min="1.0" max="2.5" step="0.05" value="1.3">
+              <div class="quick-pills">
+                <button type="button" class="pill-btn pill-ltv-coeff" data-coeff="1.1">1.1</button>
+                <button type="button" class="pill-btn pill-ltv-coeff" data-coeff="1.15">1.15</button>
+                <button type="button" class="pill-btn pill-ltv-coeff" data-coeff="1.25">1.25</button>
+                <button type="button" class="pill-btn pill-ltv-coeff active" data-coeff="1.3">1.3</button>
+                <button type="button" class="pill-btn pill-ltv-coeff" data-coeff="1.5">1.5</button>
+                <button type="button" class="pill-btn pill-ltv-coeff" data-coeff="2.0">2.0</button>
+              </div>
+              <div class="clean-note" id="ltvCoeffNote">
+                Коэффициент 1.3: на каждые 10 новых клиентов приходится 3 повторных заказа (+30% к объему сделок)
+              </div>
+            </div>
+
+            <!-- Режим 2: Подписка / регулярные заказы в год на одного клиента -->
+            <div id="ltvSubView" style="display: none; margin-top: 10px;">
+              <div class="field-header">
+                <span>Повторных сделок в год на 1 клиента</span>
+                <span id="ltvMultiplierDisplay" class="field-val-badge">+2 заказа</span>
+              </div>
+              <div class="input-row">
+                <div class="currency-input-wrapper">
+                  <input type="number" id="ltvSubInput" class="number-input" min="1" max="15" step="1" value="2">
+                  <span class="input-suffix">заказов</span>
+                </div>
+              </div>
+              <input type="range" id="ltvSlider" min="1" max="15" step="1" value="2">
+              <div class="quick-pills">
+                <button type="button" class="pill-btn pill-ltv active" data-ltv="2">+2 заказа</button>
+                <button type="button" class="pill-btn pill-ltv" data-ltv="3">+3 заказа</button>
+                <button type="button" class="pill-btn pill-ltv" data-ltv="5">+5 заказов</button>
+                <button type="button" class="pill-btn pill-ltv" data-ltv="12">+12 заказов</button>
+              </div>
+              <div class="clean-note">
+                Для подписной модели: каждый клиент оплачивает услугу или совершает заказ N раз в год
+              </div>
             </div>
           </div>
 
@@ -251,7 +295,7 @@
             </div>
           </div>
 
-          <!-- 4 Financial Stat Cards -->
+          <!-- 5 Financial Stat Cards: Выручка -> Выручка за вычетом Call-Talk -> Чистая прибыль (АКЦЕНТ) -> ROI -> Бюджет -->
           <div class="financial-summary-grid">
             <div class="fin-stat-col">
               <span class="fin-stat-label">Привлеченная выручка</span>
@@ -260,9 +304,18 @@
             </div>
 
             <div class="fin-stat-col">
-              <span class="fin-stat-label">Чистая прибыль</span>
+              <span class="fin-stat-label">Выручка за вычетом Call-Talk</span>
+              <span class="fin-stat-val-huge dark" id="heroGrossRemainingVal">11 625 600 руб.</span>
+              <span class="fin-stat-sub" id="heroGrossRemainingSub">Остаток на счете после нашего сервиса</span>
+            </div>
+
+            <div class="fin-stat-col highlight-net-profit">
+              <div class="fin-stat-label-row">
+                <span class="fin-stat-label green">Чистая прибыль</span>
+                <span class="net-profit-badge">СВЕРХ МАРЖИ</span>
+              </div>
               <span class="fin-stat-val-huge green" id="heroNetProfitVal">+1 065 600 руб.</span>
-              <span class="fin-stat-sub" id="heroNetProfitSub">Чистыми сверх всех затрат</span>
+              <span class="fin-stat-sub green-sub" id="heroNetProfitSub">Чистыми сверх всех затрат и маржи 12%</span>
             </div>
 
             <div class="fin-stat-col">

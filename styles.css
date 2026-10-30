@@ -544,6 +544,42 @@ input:checked + .slider::before {
   transform: translateX(18px);
 }
 
+/* LTV Mode Switcher Tabs */
+.ltv-mode-tabs {
+  display: flex;
+  background: #F1F5F9;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.ltv-mode-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.ltv-mode-tab:hover {
+  color: var(--text-main);
+}
+
+.ltv-mode-tab.active {
+  background: #FFFFFF;
+  color: var(--primary);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 /* RIGHT COLUMN: RESULTS PANEL */
 .results-panel {
   display: flex;
@@ -678,13 +714,27 @@ input:checked + .slider::before {
 
 .financial-summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  align-items: stretch;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1360px) {
+  .financial-summary-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 900px) {
   .financial-summary-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .financial-summary-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -780,6 +830,25 @@ input:checked + .slider::before {
 .fin-stat-col {
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  padding: 8px 10px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.fin-stat-col.highlight-net-profit {
+  background: #ECFDF5;
+  border: 1.5px solid #10B981;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.15);
+}
+
+.fin-stat-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
 }
 
 .fin-stat-label {
@@ -790,12 +859,28 @@ input:checked + .slider::before {
   letter-spacing: 0.5px;
 }
 
+.fin-stat-label.green {
+  color: #047857;
+}
+
+.net-profit-badge {
+  font-size: 8.5px;
+  font-weight: 800;
+  background: #10B981;
+  color: #FFFFFF;
+  padding: 1.5px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
 .fin-stat-val-huge {
   font-family: 'Manrope', sans-serif;
-  font-size: 18px;
+  font-size: 16.5px;
   font-weight: 800;
   letter-spacing: -0.4px;
-  margin: 3px 0 2px 0;
+  margin: 4px 0 2px 0;
+  line-height: 1.25;
 }
 
 .fin-stat-val-huge.blue {
@@ -803,7 +888,8 @@ input:checked + .slider::before {
 }
 
 .fin-stat-val-huge.green {
-  color: var(--teal);
+  color: #059669;
+  font-size: 17.5px;
 }
 
 .fin-stat-val-huge.purple {
@@ -815,8 +901,14 @@ input:checked + .slider::before {
 }
 
 .fin-stat-sub {
-  font-size: 10.5px;
+  font-size: 10px;
   color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.fin-stat-sub.green-sub {
+  color: #065F46;
+  font-weight: 600;
 }
 
 /* 4. Conclusions Card */

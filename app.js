@@ -42,14 +42,16 @@ const fmt = {
 const state = {
   tariffMonths: 4,          // 4 or 2
   tariffFixPerMonth: 39000,
-  mailboxesCount: 10,       // 10, 20, 30
+  mailboxesCount: 10,       // 10, 15, 20, 30
   leadPrice: 2800,          // manual input
   leadsCount: 78,           // 78 for 4m (10 boxes), 34 for 2m (10 boxes)
   dealCheck: 1000000,       // average deal in rubles
   marginPercent: 12,        // 12% (strictly 10-12%, max 15%)
   conversionPercent: 15,    // 15%
   ltvEnabled: false,
-  ltvRepeatDeals: 2
+  ltvMode: 'coeff',         // 'coeff' (разовые покупки / коэффициент) or 'sub' (подписка)
+  ltvCoeff: 1.3,            // 1.3 (e.g. 10 deals -> +3 repeat = 13 deals)
+  ltvRepeatDeals: 2         // +2 repeat deals in subscription mode
 };
 
 // Base tariff benchmarks
@@ -106,8 +108,19 @@ const DOM = {
   conversionDisplay: document.getElementById('conversionDisplay'),
   quickConvPills: document.querySelectorAll('.pill-conv'),
 
+  // LTV & Repeat Deals (Two Modes: Coeff vs Subscription)
   ltvToggle: document.getElementById('ltvToggle'),
   ltvSubpanel: document.getElementById('ltvSubpanel'),
+  ltvModeCoeffBtn: document.getElementById('ltvModeCoeffBtn'),
+  ltvModeSubBtn: document.getElementById('ltvModeSubBtn'),
+  ltvCoeffView: document.getElementById('ltvCoeffView'),
+  ltvSubView: document.getElementById('ltvSubView'),
+  ltvCoeffInput: document.getElementById('ltvCoeffInput'),
+  ltvCoeffSlider: document.getElementById('ltvCoeffSlider'),
+  ltvCoeffDisplay: document.getElementById('ltvCoeffDisplay'),
+  quickLtvCoeffPills: document.querySelectorAll('.pill-ltv-coeff'),
+  ltvCoeffNote: document.getElementById('ltvCoeffNote'),
+  ltvSubInput: document.getElementById('ltvSubInput'),
   ltvSlider: document.getElementById('ltvSlider'),
   ltvMultiplierDisplay: document.getElementById('ltvMultiplierDisplay'),
   quickLtvPills: document.querySelectorAll('.pill-ltv'),
@@ -117,8 +130,18 @@ const DOM = {
   forecastDealsVal: document.getElementById('forecastDealsVal'),
   forecastRevenueVal: document.getElementById('forecastRevenueVal'),
   forecastSubText: document.getElementById('forecastSubText'),
+
+  // 5 Financial Stat Cards
   heroRevenueVal: document.getElementById('heroRevenueVal'),
   heroRevenueSub: document.getElementById('heroRevenueSub'),
+  heroGrossRemainingVal: document.getElementById('heroGrossRemainingVal'),
+  heroGrossRemainingSub: document.getElementById('heroGrossRemainingSub'),
+  heroNetProfitVal: document.getElementById('heroNetProfitVal'),
+  heroNetProfitSub: document.getElementById('heroNetProfitSub'),
+  heroRoiVal: document.getElementById('heroRoiVal'),
+  heroRomiMultipleSub: document.getElementById('heroRomiMultipleSub'),
+  heroBudgetVal: document.getElementById('heroBudgetVal'),
+  heroBudgetBreakdownSub: document.getElementById('heroBudgetBreakdownSub'),
 
   // Monthly Table
   tableBadgePeriod: document.getElementById('tableBadgePeriod'),
@@ -132,14 +155,6 @@ const DOM = {
   beProgressFillBe: document.getElementById('beProgressFillBe'),
   beProgressFillProfit: document.getElementById('beProgressFillProfit'),
   breakevenExplanationText: document.getElementById('breakevenExplanationText'),
-
-  // Financial Totals
-  heroNetProfitVal: document.getElementById('heroNetProfitVal'),
-  heroNetProfitSub: document.getElementById('heroNetProfitSub'),
-  heroRoiVal: document.getElementById('heroRoiVal'),
-  heroRomiMultipleSub: document.getElementById('heroRomiMultipleSub'),
-  heroBudgetVal: document.getElementById('heroBudgetVal'),
-  heroBudgetBreakdownSub: document.getElementById('heroBudgetBreakdownSub'),
 
   // Conclusions
   conclusionsList: document.getElementById('conclusionsList'),
@@ -334,23 +349,79 @@ function bindEvents() {
     });
   });
 
-  // LTV
+  // LTV Toggle & Modes
   DOM.ltvToggle.addEventListener('change', (e) => {
     state.ltvEnabled = e.target.checked;
     render();
   });
 
-  DOM.ltvSlider.addEventListener('input', (e) => {
-    state.ltvRepeatDeals = parseInt(e.target.value, 10);
-    render();
-  });
-
-  DOM.quickLtvPills.forEach(pill => {
-    pill.addEventListener('click', () => {
-      state.ltvRepeatDeals = parseInt(pill.dataset.ltv, 10);
+  if (DOM.ltvModeCoeffBtn) {
+    DOM.ltvModeCoeffBtn.addEventListener('click', () => {
+      state.ltvMode = 'coeff';
       render();
     });
-  });
+  }
+
+  if (DOM.ltvModeSubBtn) {
+    DOM.ltvModeSubBtn.addEventListener('click', () => {
+      state.ltvMode = 'sub';
+      render();
+    });
+  }
+
+  // Coeff Mode Controls
+  if (DOM.ltvCoeffInput) {
+    DOM.ltvCoeffInput.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      if (!isNaN(val) && val >= 1.0) {
+        state.ltvCoeff = Math.round(val * 100) / 100;
+        render();
+      }
+    });
+  }
+
+  if (DOM.ltvCoeffSlider) {
+    DOM.ltvCoeffSlider.addEventListener('input', (e) => {
+      state.ltvCoeff = parseFloat(e.target.value);
+      render();
+    });
+  }
+
+  if (DOM.quickLtvCoeffPills) {
+    DOM.quickLtvCoeffPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        state.ltvCoeff = parseFloat(pill.dataset.coeff);
+        render();
+      });
+    });
+  }
+
+  // Subscription Mode Controls
+  if (DOM.ltvSubInput) {
+    DOM.ltvSubInput.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10);
+      if (!isNaN(val) && val >= 1) {
+        state.ltvRepeatDeals = Math.min(val, 30);
+        render();
+      }
+    });
+  }
+
+  if (DOM.ltvSlider) {
+    DOM.ltvSlider.addEventListener('input', (e) => {
+      state.ltvRepeatDeals = parseInt(e.target.value, 10);
+      render();
+    });
+  }
+
+  if (DOM.quickLtvPills) {
+    DOM.quickLtvPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        state.ltvRepeatDeals = parseInt(pill.dataset.ltv, 10);
+        render();
+      });
+    });
+  }
 
   // Action Buttons
   DOM.btnCopyOffer.addEventListener('click', copyClientSummary);
@@ -373,15 +444,30 @@ function calculateMetrics() {
   const leadsCount = state.leadsCount;
   const currentLeadPrice = state.leadPrice;
 
-  const ltvFactor = state.ltvEnabled ? (1 + state.ltvRepeatDeals) : 1;
+  // Base closed deals from cold leads
+  const exactBaseDeals = leadsCount * (state.conversionPercent / 100);
+  const baseDealsCount = Math.max(1, Math.round(exactBaseDeals));
 
-  // Closed deals
-  const exactDeals = leadsCount * (state.conversionPercent / 100);
-  const dealsCount = Math.max(1, Math.round(exactDeals));
+  // LTV & Repeat Deals calculation
+  let dealsCount = baseDealsCount;
+  let repeatDealsCount = 0;
+  let ltvFactor = 1;
+
+  if (state.ltvEnabled) {
+    if (state.ltvMode === 'coeff') {
+      dealsCount = Math.max(1, Math.round(baseDealsCount * state.ltvCoeff));
+      repeatDealsCount = Math.max(0, dealsCount - baseDealsCount);
+      ltvFactor = state.ltvCoeff;
+    } else {
+      dealsCount = baseDealsCount * (1 + state.ltvRepeatDeals);
+      repeatDealsCount = baseDealsCount * state.ltvRepeatDeals;
+      ltvFactor = 1 + state.ltvRepeatDeals;
+    }
+  }
 
   // Margin per deal (strictly from margin 10-12-15%)
   const marginFrac = state.marginPercent / 100;
-  const profitPerDeal = state.dealCheck * marginFrac * ltvFactor;
+  const profitPerDeal = state.dealCheck * marginFrac;
 
   // Call-Talk Costs
   const fixTotal = state.tariffMonths * state.tariffFixPerMonth;
@@ -392,13 +478,22 @@ function calculateMetrics() {
   const exactDealsToBreakEven = profitPerDeal > 0 ? (totalBudget / profitPerDeal) : 0;
   const dealsToBreakEven = Math.max(1, Math.ceil(exactDealsToBreakEven));
   const breakEvenConversion = leadsCount > 0 ? ((exactDealsToBreakEven / leadsCount) * 100).toFixed(1) : '0.0';
-
   const profitDealsCount = Math.max(0, dealsCount - dealsToBreakEven);
 
-  // Financial totals
-  const grossRevenue = dealsCount * state.dealCheck * ltvFactor;
-  const grossProfit = dealsCount * profitPerDeal;
+  // Financial totals:
+  // 1. Привлеченная выручка (все сделки * чек)
+  const grossRevenue = dealsCount * state.dealCheck;
+
+  // 2. Выручка за вычетом сервиса (сколько денег остается на счете клиента за минусом Call-Talk)
+  const grossRemaining = Math.max(0, grossRevenue - totalBudget);
+
+  // 3. Валовая прибыль (с учетом чистой маржи)
+  const grossProfit = grossRevenue * marginFrac;
+
+  // 4. Чистая прибыль (сверх ВСЕХ затрат, себестоимости и бюджета Call-Talk)
   const netProfit = grossProfit - totalBudget;
+
+  // 5. Окупаемость
   const roi = totalBudget > 0 ? Math.round((netProfit / totalBudget) * 100) : 0;
   const romiMultiple = totalBudget > 0 ? (grossProfit / totalBudget).toFixed(1) : '0.0';
 
@@ -406,7 +501,10 @@ function calculateMetrics() {
     tariffData,
     currentLeadPrice,
     leadsCount,
+    baseDealsCount,
     dealsCount,
+    repeatDealsCount,
+    ltvFactor,
     profitPerDeal,
     fixTotal,
     variableTotal,
@@ -415,6 +513,7 @@ function calculateMetrics() {
     breakEvenConversion,
     profitDealsCount,
     grossRevenue,
+    grossRemaining,
     grossProfit,
     netProfit,
     roi,
@@ -500,40 +599,83 @@ function render() {
     pill.classList.toggle('active', pConv === state.conversionPercent);
   });
 
-  // LTV
+  // LTV UI
   DOM.ltvToggle.checked = state.ltvEnabled;
   DOM.ltvSubpanel.style.display = state.ltvEnabled ? 'block' : 'none';
-  DOM.ltvSlider.value = state.ltvRepeatDeals;
-  DOM.ltvMultiplierDisplay.textContent = `+${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)}`;
 
-  DOM.quickLtvPills.forEach(pill => {
-    const pLtv = parseInt(pill.dataset.ltv, 10);
-    pill.classList.toggle('active', pLtv === state.ltvRepeatDeals);
-  });
+  if (DOM.ltvModeCoeffBtn) DOM.ltvModeCoeffBtn.classList.toggle('active', state.ltvMode === 'coeff');
+  if (DOM.ltvModeSubBtn) DOM.ltvModeSubBtn.classList.toggle('active', state.ltvMode === 'sub');
+  if (DOM.ltvCoeffView) DOM.ltvCoeffView.style.display = state.ltvMode === 'coeff' ? 'block' : 'none';
+  if (DOM.ltvSubView) DOM.ltvSubView.style.display = state.ltvMode === 'sub' ? 'block' : 'none';
+
+  // Coeff controls
+  if (DOM.ltvCoeffDisplay) DOM.ltvCoeffDisplay.textContent = `${state.ltvCoeff}×`;
+  if (DOM.ltvCoeffInput && document.activeElement !== DOM.ltvCoeffInput) {
+    DOM.ltvCoeffInput.value = state.ltvCoeff;
+  }
+  if (DOM.ltvCoeffSlider) DOM.ltvCoeffSlider.value = state.ltvCoeff;
+  if (DOM.quickLtvCoeffPills) {
+    DOM.quickLtvCoeffPills.forEach(pill => {
+      pill.classList.toggle('active', parseFloat(pill.dataset.coeff) === state.ltvCoeff);
+    });
+  }
+  if (DOM.ltvCoeffNote) {
+    const repeatPct = Math.round((state.ltvCoeff - 1) * 100);
+    const repeatPer10 = Math.round((state.ltvCoeff - 1) * 10);
+    DOM.ltvCoeffNote.textContent = `Коэффициент ${state.ltvCoeff}: на каждые 10 новых клиентов приходится ${repeatPer10} повторных заказов (+${repeatPct}% к объему сделок)`;
+  }
+
+  // Subscription controls
+  if (DOM.ltvMultiplierDisplay) DOM.ltvMultiplierDisplay.textContent = `+${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)}`;
+  if (DOM.ltvSubInput && document.activeElement !== DOM.ltvSubInput) {
+    DOM.ltvSubInput.value = state.ltvRepeatDeals;
+  }
+  if (DOM.ltvSlider) DOM.ltvSlider.value = state.ltvRepeatDeals;
+  if (DOM.quickLtvPills) {
+    DOM.quickLtvPills.forEach(pill => {
+      pill.classList.toggle('active', parseInt(pill.dataset.ltv, 10) === state.ltvRepeatDeals);
+    });
+  }
 
   // ==================== 1. ПРОГНОЗ ПРОДАЖ И ФИНАНСОВЫЙ ИТОГ (ГЛАВНЫЙ БЛОК НАВЕРХУ) ====================
   if (DOM.forecastDealsVal) DOM.forecastDealsVal.textContent = `${m.dealsCount} ${pluralDeals(m.dealsCount)}`;
   if (DOM.forecastRevenueVal) DOM.forecastRevenueVal.textContent = fmt.rub(m.grossRevenue);
   if (DOM.forecastSubText) {
     if (state.ltvEnabled) {
-      DOM.forecastSubText.textContent = `Из ${m.leadsCount} лидов при конверсии ${state.conversionPercent}% (с учетом LTV: +${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)})`;
+      if (state.ltvMode === 'coeff') {
+        DOM.forecastSubText.textContent = `Из ${m.leadsCount} лидов при конверсии ${state.conversionPercent}% (${m.baseDealsCount} первичных + ${m.repeatDealsCount} повторных по коэфф. ${state.ltvCoeff}×)`;
+      } else {
+        DOM.forecastSubText.textContent = `Из ${m.leadsCount} лидов при конверсии ${state.conversionPercent}% (${m.baseDealsCount} первичных клиентов, каждый совершает еще +${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)})`;
+      }
     } else {
       DOM.forecastSubText.textContent = `Из ${m.leadsCount} лидов с подтвержденным интересом при конверсии отдела продаж ${state.conversionPercent}%`;
     }
   }
 
-  // 4 Financial Stat Cards
+  // 5 Financial Stat Cards
+  // 1. Привлеченная выручка
   if (DOM.heroRevenueVal) DOM.heroRevenueVal.textContent = fmt.rub(m.grossRevenue);
-  if (DOM.heroRevenueSub) DOM.heroRevenueSub.textContent = `${m.dealsCount} ${pluralDeals(m.dealsCount)} по ${fmt.rub(state.dealCheck)}${state.ltvEnabled ? ` (+LTV)` : ''}`;
+  if (DOM.heroRevenueSub) DOM.heroRevenueSub.textContent = `${m.dealsCount} ${pluralDeals(m.dealsCount)} по ${fmt.rub(state.dealCheck)}`;
 
-  DOM.heroNetProfitVal.textContent = `${m.netProfit >= 0 ? '+' : ''}${fmt.rub(m.netProfit)}`;
-  DOM.heroNetProfitVal.style.color = m.netProfit >= 0 ? 'var(--teal)' : '#DC2626';
-  DOM.heroNetProfitSub.textContent = `Чистыми сверх всех затрат`;
+  // 2. Выручка за вычетом сервиса Call-Talk
+  if (DOM.heroGrossRemainingVal) DOM.heroGrossRemainingVal.textContent = fmt.rub(m.grossRemaining);
+  if (DOM.heroGrossRemainingSub) DOM.heroGrossRemainingSub.textContent = `Остаток на счете после оплаты сервиса`;
 
+  // 3. Чистая прибыль сверх ВСЕХ затрат (с учетом маржи) — АКЦЕНТ
+  if (DOM.heroNetProfitVal) {
+    DOM.heroNetProfitVal.textContent = `${m.netProfit >= 0 ? '+' : ''}${fmt.rub(m.netProfit)}`;
+    DOM.heroNetProfitVal.style.color = m.netProfit >= 0 ? '#059669' : '#DC2626';
+  }
+  if (DOM.heroNetProfitSub) {
+    DOM.heroNetProfitSub.textContent = `Чистыми сверх всех затрат и маржи ${state.marginPercent}%`;
+  }
+
+  // 4. Окупаемость
   DOM.heroRoiVal.textContent = fmt.pct(m.roi);
   DOM.heroRoiVal.style.color = m.roi >= 0 ? 'var(--primary)' : '#DC2626';
   DOM.heroRomiMultipleSub.textContent = `Возврат бюджета в ${m.romiMultiple} раза`;
 
+  // 5. Бюджет Call-Talk
   DOM.heroBudgetVal.textContent = fmt.rub(m.totalBudget);
   DOM.heroBudgetBreakdownSub.textContent = `${fmt.rub(m.fixTotal)} фикс + ${m.leadsCount} лидов`;
 
@@ -678,13 +820,18 @@ function renderConclusions(m) {
 function copyClientSummary() {
   const m = calculateMetrics();
 
+  const ltvSummary = state.ltvEnabled
+    ? (state.ltvMode === 'coeff' ? ` (с учетом LTV: коэфф. ${state.ltvCoeff}×, +${Math.round((state.ltvCoeff - 1) * 100)}% допродаж)` : ` (с учетом LTV: +${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)})`)
+    : '';
+
   const text = `
 Расчет результатов проекта Call-Talk:
 
 Прогноз продаж:
-• Закрытых сделок: ${m.dealsCount} ${pluralDeals(m.dealsCount)} из ${m.leadsCount} лидов (конверсия ${state.conversionPercent}%)
+• Закрытых сделок: ${m.dealsCount} ${pluralDeals(m.dealsCount)} из ${m.leadsCount} лидов (конверсия ${state.conversionPercent}%)${ltvSummary}
 • Привлеченная выручка: ${fmt.rub(m.grossRevenue)}
-• Чистая прибыль сверх затрат: +${fmt.rub(m.netProfit)}
+• Выручка за вычетом Call-Talk: ${fmt.rub(m.grossRemaining)} (остаток на счете клиента)
+• Чистая прибыль сверх ВСЕХ затрат (маржа ${state.marginPercent}%): +${fmt.rub(m.netProfit)}
 • Окупаемость затрат (ROI): ${fmt.pct(m.roi)} (возврат бюджета в ${m.romiMultiple} раза)
 
 Условия проекта:
@@ -697,7 +844,7 @@ function copyClientSummary() {
 
 Порог окупаемости (защита от рисков):
 При среднем чеке ${fmt.rub(state.dealCheck)} и марже ${state.marginPercent}% валовая прибыль со сделки составляет ${fmt.rub(m.profitPerDeal)}.
-Для полной окупаемости проекта достаточно закрыть ВСЕГО ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов (порог конверсии всего ${m.breakEvenConversion}%). Оставшиеся закрытые сделки приносят чистую прибыль.
+Для полной окупаемости проекта достаточно закрыть ВСЕГО ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов (порог конверсии всего ${m.breakEvenConversion}%). Все последующие закрытые сделки приносят чистую прибыль.
   `.trim();
 
   navigator.clipboard.writeText(text).then(() => {
@@ -714,7 +861,7 @@ function copyConclusions() {
   const text = `
 Выводы по проекту Call-Talk:
 
-1. Прогноз продаж: при конверсии ${state.conversionPercent}% прогнозируется ${m.dealsCount} ${pluralDeals(m.dealsCount)}, ${fmt.rub(m.grossRevenue)} выручки и +${fmt.rub(m.netProfit)} чистой прибыли сверх затрат (ROI ${fmt.pct(m.roi)}).
+1. Прогноз продаж: при конверсии ${state.conversionPercent}% прогнозируется ${m.dealsCount} ${pluralDeals(m.dealsCount)}, ${fmt.rub(m.grossRevenue)} выручки, ${fmt.rub(m.grossRemaining)} остатка на счете за вычетом сервиса и +${fmt.rub(m.netProfit)} чистой прибыли сверх всех затрат (ROI ${fmt.pct(m.roi)}).
 2. Защита от рисков: для 100% возврата бюджета достаточно закрыть всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов (порог конверсии всего ${m.breakEvenConversion}%).
 3. Оплата за результат: фикс покрывает инфраструктуру (${state.mailboxesCount} ящиков Яндекс 360). Лиды оплачиваются только за подтвержденный интерес. Нецелевые ответы — 0 руб.
   `.trim();
@@ -748,7 +895,12 @@ function getQueryString() {
   params.set('conv', state.conversionPercent);
   if (state.ltvEnabled) {
     params.set('ltv', '1');
-    params.set('rep', state.ltvRepeatDeals);
+    params.set('ltvm', state.ltvMode);
+    if (state.ltvMode === 'coeff') {
+      params.set('ltvc', state.ltvCoeff);
+    } else {
+      params.set('rep', state.ltvRepeatDeals);
+    }
   }
   return '?' + params.toString();
 }
@@ -803,6 +955,14 @@ function loadUrlParams() {
 
   if (params.has('ltv') && params.get('ltv') === '1') {
     state.ltvEnabled = true;
+    if (params.has('ltvm')) {
+      const mode = params.get('ltvm');
+      if (mode === 'coeff' || mode === 'sub') state.ltvMode = mode;
+    }
+    if (params.has('ltvc')) {
+      const c = parseFloat(params.get('ltvc'));
+      if (c >= 1.0 && c <= 5.0) state.ltvCoeff = c;
+    }
     if (params.has('rep')) {
       const rep = parseInt(params.get('rep'), 10);
       if (rep >= 1 && rep <= 30) state.ltvRepeatDeals = rep;
