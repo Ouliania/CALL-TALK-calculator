@@ -1170,11 +1170,11 @@ input:checked + .slider::before {
 
 .niche-card {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   padding: 14px 16px;
   background: #F8FAFC;
   border: 1px solid var(--border);
-  border-left: 3px solid #E0DBFD;
   border-radius: var(--radius-md);
   transition: all 0.2s ease;
 }
@@ -1182,15 +1182,40 @@ input:checked + .slider::before {
 .niche-card:hover {
   background: #FFFFFF;
   border-color: var(--primary);
-  border-left-color: var(--primary);
   box-shadow: 0 6px 18px rgba(91, 75, 216, 0.1);
   transform: translateY(-2px);
+}
+
+.niche-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  background: #FFFFFF;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: all 0.2s ease;
+}
+
+.niche-icon-wrap svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--primary);
+}
+
+.niche-card:hover .niche-icon-wrap {
+  background: var(--primary-light);
+  transform: scale(1.05);
 }
 
 .niche-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .niche-name {
