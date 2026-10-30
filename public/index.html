@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Калькулятор окупаемости B2B-аутрича | Call-Talk</title>
-  <meta name="description" content="Интерактивный калькулятор окупаемости email-аутрича Call-Talk: расчет окупаемости со сделок, чистой прибыли при марже 10–15%, точки безубыточности и бюджета.">
+  <meta name="description" content="Калькулятор окупаемости B2B email-аутрича Call-Talk: расчет точки безубыточности, помесячный план и чистая прибыль.">
   
   <!-- Google Fonts: Inter & Manrope -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +16,7 @@
 </head>
 <body>
 
-  <!-- Top App Navigation -->
+  <!-- Top Header -->
   <header class="app-header">
     <div class="container header-inner">
       <div class="brand-wrapper">
@@ -26,23 +26,20 @@
           </svg>
           CALL-TALK
         </div>
-        <div class="brand-text-col">
-          <span class="brand-title">Калькулятор окупаемости B2B-аутрича</span>
-          <span class="brand-subtitle">Инфраструктура + оплата за результат</span>
-        </div>
+        <span class="brand-title">Калькулятор окупаемости B2B-аутрича</span>
       </div>
 
       <div class="header-actions">
-        <button id="btnCopyOffer" class="btn btn-primary" title="Скопировать готовый расчет для клиента">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-          Скопировать клиенту
+        <button id="btnCopyOffer" class="btn btn-primary" title="Скопировать расчет">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Скопировать расчет
         </button>
-        <button id="btnShareLink" class="btn btn-outline" title="Скопировать ссылку с текущими параметрами">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+        <button id="btnShareLink" class="btn btn-outline" title="Скопировать ссылку">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
           Ссылка
         </button>
-        <button id="btnPrint" class="btn btn-outline" title="Распечатать или сохранить в PDF">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        <button id="btnPrint" class="btn btn-outline" title="Печать в PDF">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
           PDF
         </button>
       </div>
@@ -51,46 +48,31 @@
 
   <main class="container">
     
-    <!-- Top Intro Bar (Без лишних пресетов) -->
+    <!-- Clean Headline -->
     <section class="intro-bar">
-      <div class="intro-title-wrap">
-        <div>
-          <h1 class="page-headline">Расчет окупаемости и точки безубыточности</h1>
-          <p class="page-lead">Наглядная математика для демонстрации на встрече с клиентом: сколько сделок окупают проект при реальной марже 10–12% (максимум 15%)</p>
-        </div>
-      </div>
+      <h1 class="page-headline">Расчет окупаемости и план проекта</h1>
     </section>
 
-    <!-- Main Grid: Left Controls, Right Results -->
+    <!-- Main Grid: Left Inputs (Wider & Compact), Right Results -->
     <div class="calc-grid">
       
-      <!-- LEFT COLUMN: INPUT CONTROLS (Простой и быстрый ввод для менеджера) -->
+      <!-- LEFT COLUMN: INPUT CONTROLS -->
       <div class="calc-panel">
         
-        <div class="panel-header-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-          Параметры проекта (ввод данных)
-        </div>
-
-        <!-- 1. СРОК ДОГОВОРА И ИНФРАСТРУКТУРА -->
+        <!-- 1. СРОК ДОГОВОРА -->
         <div class="panel-section">
           <div class="section-label">
-            <span>1. Срок договора и инфраструктура</span>
-            <span class="text-muted" id="labelPeriodSummary">4 месяца · 5 100 контактов</span>
+            <span>1. Срок договора</span>
           </div>
-          <div class="section-hint">Фикс за холодную инфраструктуру, сбор базы и прогрев. Оплачивается единоразово.</div>
 
           <div class="option-cards-row">
             <div class="option-card active" id="tariff4" data-months="4" data-fix="39000">
-              <span class="badge-recommended">Основной</span>
-              <span class="option-card-title">4 месяца (Масштаб)</span>
-              <span class="option-card-desc">База: 5 100 контактов<br>Прогноз: ~78 лидов (63–94)</span>
+              <span class="option-card-title">4 месяца</span>
               <span class="option-card-price">39 000 руб./мес</span>
             </div>
 
             <div class="option-card" id="tariff2" data-months="2" data-fix="56000">
-              <span class="option-card-title">2 месяца (Тест)</span>
-              <span class="option-card-desc">База: 2 100 контактов<br>Прогноз: ~34 лида (27–41)</span>
+              <span class="option-card-title">2 месяца</span>
               <span class="option-card-price">56 000 руб./мес</span>
             </div>
           </div>
@@ -100,84 +82,59 @@
         <div class="panel-section">
           <div class="section-label">
             <span>2. Почтовые ящики Яндекс 360</span>
-            <span class="text-muted" id="labelMailboxesSummary">10 ящиков · Базовый поток</span>
           </div>
-          <div class="section-hint">Ящики регистрирует и оплачивает клиент (Яндекс 360 ~300 руб./ящик в мес), либо заказывает у нас техническую настройку доменов и почт под ключ.</div>
 
           <div class="mailboxes-selector-row">
             <button type="button" class="mailbox-btn active" data-boxes="10">
               <span class="mailbox-num">10 ящиков</span>
-              <span class="mailbox-sub">до 1 500 конт./мес</span>
             </button>
             <button type="button" class="mailbox-btn" data-boxes="20">
               <span class="mailbox-num">20 ящиков</span>
-              <span class="mailbox-sub">до 2 500 конт./мес</span>
             </button>
             <button type="button" class="mailbox-btn" data-boxes="30">
               <span class="mailbox-num">30 ящиков</span>
-              <span class="mailbox-sub">до 4 000+ конт./мес</span>
             </button>
           </div>
+          <div class="section-hint">Оплата Яндексу напрямую (~300 руб./ящик в мес) или настройка под ключ.</div>
         </div>
 
-        <!-- 3. ОПЛАТА ЗА РЕЗУЛЬТАТ (СТОИМОСТЬ И КОЛИЧЕСТВО ЛИДОВ) -->
+        <!-- 3. ЛИДЫ (РУЧНОЙ ВВОД МЕНЕДЖЕРА БЕЗ ПАЛЕВА ЦЕН) -->
         <div class="panel-section">
           <div class="section-label">
-            <span>3. Оплата за результат (лиды)</span>
-            <span class="text-muted" id="labelLeadPriceSummary">2 800 руб. / лид</span>
+            <span>3. Лиды с подтвержденным интересом</span>
           </div>
-          <div class="section-hint">Оплата только за подтвержденный интерес ЛПР. Отказы, автоответы и спам — 0 руб.</div>
 
-          <!-- Lead Price Input -->
+          <!-- Стоимость лида -->
+          <div class="input-clean-row">
+            <label for="leadPriceInput" class="clean-field-label">Стоимость одного лида:</label>
+            <div class="currency-input-wrapper">
+              <input type="text" id="leadPriceInput" class="number-input" value="2 800">
+              <span class="input-suffix">руб.</span>
+            </div>
+          </div>
+
+          <!-- Прогноз переданных лидов (считается от ящиков 10/20/30, но меняется вручную) -->
+          <div class="input-clean-row" style="margin-top: 10px;">
+            <label for="leadsCountInput" class="clean-field-label">Прогноз лидов за срок:</label>
+            <div class="currency-input-wrapper">
+              <input type="number" id="leadsCountInput" class="number-input" value="78" min="1" max="2000">
+              <span class="input-suffix">лидов</span>
+            </div>
+          </div>
+          <div class="section-hint">Оплата только за подтвержденный интерес. Отказы и нецелевые контакты — 0 руб.</div>
+        </div>
+
+        <!-- 4. ЭКОНОМИКА КЛИЕНТА (СДЕЛКИ, МАРЖА, КОНВЕРСИЯ) -->
+        <div class="panel-section">
+          <div class="section-label">
+            <span>4. Экономика клиента</span>
+          </div>
+
+          <!-- Средний чек -->
           <div class="input-with-slider" style="margin-bottom: 14px;">
-            <div class="section-label" style="margin-bottom: 4px;">
-              <span>Стоимость одного лида</span>
-              <span id="leadPriceDisplay" style="color: var(--primary); font-weight: 800;">2 800 руб.</span>
-            </div>
-            <div class="input-row">
-              <div class="currency-input-wrapper">
-                <input type="text" id="leadPriceInput" class="number-input" value="2 800">
-                <span class="input-suffix">руб.</span>
-              </div>
-            </div>
-            <div class="quick-pills">
-              <button class="pill-btn pill-lead-price" data-price="1800">1 800 руб.</button>
-              <button class="pill-btn pill-lead-price active" data-price="2800">2 800 руб.</button>
-              <button class="pill-btn pill-lead-price" data-price="3500">3 500 руб.</button>
-              <button class="pill-btn pill-lead-price" data-price="4800">4 800 руб.</button>
-              <button class="pill-btn pill-lead-price" data-price="5000">5 000 руб.</button>
-            </div>
-          </div>
-
-          <!-- Leads Count Input -->
-          <div class="input-with-slider">
-            <div class="section-label" style="margin-bottom: 4px;">
-              <span>Прогноз переданных лидов за период</span>
-              <span id="leadsCountDisplay" style="color: var(--teal); font-weight: 800;">78 лидов</span>
-            </div>
-            <div class="input-row">
-              <div class="currency-input-wrapper">
-                <input type="number" id="leadsCountInput" class="number-input" value="78" min="1" max="1000">
-                <span class="input-suffix">лидов</span>
-              </div>
-            </div>
-            <div class="section-hint" style="margin-top: 5px;" id="leadsCountHint">
-              По умолчанию: средний прогноз тарифа (63–94 лида). Можно скорректировать под задачу.
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. ЭКОНОМИКА КЛИЕНТА (ЧЕК, МАРЖА, КОНВЕРСИЯ) -->
-        <div class="panel-section">
-          <div class="section-label">
-            <span>4. Экономика клиента (сделки и маржа)</span>
-          </div>
-
-          <!-- Average Check -->
-          <div class="input-with-slider" style="margin-bottom: 16px;">
-            <div class="section-label" style="margin-bottom: 4px;">
+            <div class="field-header">
               <span>Средний чек одной сделки</span>
-              <span id="dealCheckDisplay" style="color: var(--primary); font-weight: 800;">1 000 000 руб.</span>
+              <span id="dealCheckDisplay" class="field-val-badge">1 000 000 руб.</span>
             </div>
             <div class="input-row">
               <div class="currency-input-wrapper">
@@ -189,18 +146,17 @@
             <div class="quick-pills">
               <button class="pill-btn" data-check="300000">300 тыс.</button>
               <button class="pill-btn" data-check="500000">500 тыс.</button>
-              <button class="pill-btn active" data-check="1000000">1,0 млн</button>
+              <button class="pill-btn active" data-check="1000000">1 млн</button>
               <button class="pill-btn" data-check="2500000">2,5 млн</button>
               <button class="pill-btn" data-check="5000000">5 млн</button>
-              <button class="pill-btn" data-check="10000000">10 млн</button>
             </div>
           </div>
 
-          <!-- Margin % (СТРОГО 10-12%, МАКСИМУМ 15%) -->
-          <div class="input-with-slider" style="margin-bottom: 16px;">
-            <div class="section-label" style="margin-bottom: 4px;">
-              <span>Маржинальность сделки (чистая маржа)</span>
-              <span id="marginDisplay" style="color: var(--teal); font-weight: 800;">12%</span>
+          <!-- Маржа % (10–12%, МАКСИМУМ 15%) -->
+          <div class="input-with-slider" style="margin-bottom: 14px;">
+            <div class="field-header">
+              <span>Маржинальность (чистая маржа)</span>
+              <span id="marginDisplay" class="field-val-badge teal">12%</span>
             </div>
             <div class="input-row">
               <div class="currency-input-wrapper">
@@ -210,21 +166,20 @@
             </div>
             <input type="range" id="marginSlider" min="5" max="30" step="1" value="12">
             <div class="quick-pills">
-              <button class="pill-btn pill-margin" data-margin="10">10% (консервативно)</button>
-              <button class="pill-btn pill-margin active" data-margin="12">12% (стандарт B2B)</button>
-              <button class="pill-btn pill-margin" data-margin="15">15% (максимум)</button>
+              <button class="pill-btn pill-margin" data-margin="10">10%</button>
+              <button class="pill-btn pill-margin active" data-margin="12">12%</button>
+              <button class="pill-btn pill-margin" data-margin="15">15%</button>
             </div>
-            <div class="margin-guideline-box">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-              <span id="marginProfitPerDealNote"><strong>Валовая прибыль с 1 сделки: 120 000 руб.</strong> Закладываем маржу 10–12% (макс. 15%), чтобы расчет был честным и окупаемость не завышалась.</span>
+            <div class="clean-note" id="marginProfitPerDealNote">
+              Валовая прибыль с 1 сделки: 120 000 руб.
             </div>
           </div>
 
-          <!-- Conversion % (Lead to Deal) -->
-          <div class="input-with-slider" style="margin-bottom: 16px;">
-            <div class="section-label" style="margin-bottom: 4px;">
-              <span>Конверсия отдела продаж (из лида в сделку)</span>
-              <span id="conversionDisplay" style="color: var(--primary); font-weight: 800;">15%</span>
+          <!-- Конверсия % -->
+          <div class="input-with-slider" style="margin-bottom: 14px;">
+            <div class="field-header">
+              <span>Конверсия отдела продаж в сделку</span>
+              <span id="conversionDisplay" class="field-val-badge">15%</span>
             </div>
             <div class="input-row">
               <div class="currency-input-wrapper">
@@ -234,18 +189,17 @@
             </div>
             <input type="range" id="conversionSlider" min="1" max="40" step="1" value="15">
             <div class="quick-pills">
-              <button class="pill-btn pill-conv" data-conv="5">5% (минимальная)</button>
+              <button class="pill-btn pill-conv" data-conv="5">5%</button>
               <button class="pill-btn pill-conv" data-conv="10">10%</button>
-              <button class="pill-btn pill-conv active" data-conv="15">15% (дефолт B2B)</button>
-              <button class="pill-btn pill-conv" data-conv="20">20% (опытный РОП)</button>
+              <button class="pill-btn pill-conv active" data-conv="15">15%</button>
+              <button class="pill-btn pill-conv" data-conv="20">20%</button>
             </div>
           </div>
 
-          <!-- LTV Repeat Deals Toggle -->
+          <!-- LTV Repeat Deals -->
           <div class="toggle-row">
             <div class="toggle-label-wrap">
-              <span class="toggle-title">Учитывать повторные заказы (LTV)</span>
-              <span class="toggle-desc">Только если клиент подтвердил регулярные дозаказы</span>
+              <span class="toggle-title">Повторные заказы (LTV)</span>
             </div>
             <label class="switch">
               <input type="checkbox" id="ltvToggle">
@@ -253,216 +207,118 @@
             </label>
           </div>
 
-          <!-- LTV Repeat Count -->
-          <div id="ltvSubpanel" class="input-with-slider" style="display: none; margin-top: 12px; padding: 12px; background: var(--bg-muted); border-radius: var(--radius-md);">
-            <div class="section-label" style="margin-bottom: 4px;">
-              <span>Среднее число повторных сделок в год</span>
-              <span id="ltvMultiplierDisplay" style="font-weight: 800; color: var(--primary);">2 повторные</span>
+          <div id="ltvSubpanel" style="display: none; margin-top: 10px;">
+            <div class="field-header">
+              <span>Повторных сделок в год</span>
+              <span id="ltvMultiplierDisplay" class="field-val-badge">+2 заказа</span>
             </div>
             <input type="range" id="ltvSlider" min="1" max="10" step="1" value="2">
-            <div class="range-labels">
-              <span>+1 заказ</span>
-              <span>+3 заказа</span>
-              <span>+10 заказов</span>
-            </div>
           </div>
 
         </div>
 
       </div>
 
-      <!-- RIGHT COLUMN: RESULTS & BUSINESS METRICS (СВЕТЛЫЙ, ЧИСТЫЙ ДИЗАЙН ДЛЯ КЛИЕНТА) -->
+      <!-- RIGHT COLUMN: RESULTS & PLAN -->
       <div class="results-panel">
         
-        <!-- ==================== 1. САМОЕ ГЛАВНОЕ: ТОЧКА БЕЗУБЫТОЧНОСТИ ==================== -->
-        <div class="breakeven-hero-card">
-          <div class="breakeven-hero-top">
-            <div class="breakeven-badge">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-              Главный показатель окупаемости
-            </div>
-            <div class="hero-tag-period" id="heroPeriodTag">
-              Договор на 4 месяца
-            </div>
-          </div>
-
-          <div class="breakeven-main-headline">
-            <span class="breakeven-lead-intro">Для полной окупаемости договора Call-Talk:</span>
-            <div class="breakeven-big-statement" id="breakevenBigText">
-              Достаточно закрыть <span class="highlight-deals">всего 3 сделки</span> из <span id="beTotalLeads">78</span> лидов
-            </div>
-          </div>
-
-          <!-- Dual Highlights: Deals & Needed Conversion -->
-          <div class="breakeven-stats-grid">
-            <div class="be-stat-col">
-              <span class="be-stat-label">Сделок для 100% возврата бюджета</span>
-              <span class="be-stat-val" id="beDealsVal">3 сделки</span>
-              <span class="be-stat-sub" id="beProfitPerDealSub">Маржа со сделки: 120 000 руб. (12%)</span>
-            </div>
-
-            <div class="be-stat-col">
-              <span class="be-stat-label">Необходимая конверсия в сделку</span>
-              <span class="be-stat-val accent" id="beConversionVal">всего 3.8%</span>
-              <span class="be-stat-sub">Окупается, даже если 96% лидов не купят</span>
-            </div>
-          </div>
-
-          <!-- Visual Progress Scale: Break-even vs Pure Profit Deals -->
-          <div class="be-progress-wrap">
-            <div class="be-progress-labels">
-              <span id="beLabelBreakEven">🎯 3 сделки покрывают весь бюджет</span>
-              <span id="beLabelProfitDeals" class="text-teal">💰 Еще 9 сделок — чистая прибыль</span>
-            </div>
-            <div class="be-progress-bar">
-              <div class="be-progress-fill-be" id="beProgressFillBe" style="width: 25%;"></div>
-              <div class="be-progress-fill-profit" id="beProgressFillProfit" style="width: 75%;"></div>
-            </div>
-          </div>
-
-          <div class="breakeven-explanation-text" id="breakevenExplanationText">
-            При среднем чеке 1 000 000 руб. и маржинальности 12% валовая прибыль с одной сделки составляет 120 000 руб.. Весь 4-месячный бюджет проекта (374 400 руб.) окупается уже с 3-й закрытой сделки. Оставшиеся сделки первого цикла приносят чистую прибыль сверх затрат на запуск.
-          </div>
-        </div>
-
-        <!-- ==================== 2. ФИНАНСОВЫЙ ИТОГ (ЧИСТАЯ ПРИБЫЛЬ И БЮДЖЕТ) ==================== -->
-        <div class="financial-summary-card">
-          <div class="fin-stat-col">
-            <span class="fin-stat-label">Чистая прибыль клиента</span>
-            <span class="fin-stat-val-huge green" id="heroNetProfitVal">+1 065 600 руб.</span>
-            <span class="fin-stat-sub" id="heroNetProfitSub">При конверсии 15% (12 сделок)</span>
-          </div>
-
-          <div class="fin-stat-col">
-            <span class="fin-stat-label">Окупаемость инвестиций (ROI)</span>
-            <span class="fin-stat-val-huge purple" id="heroRoiVal">+285%</span>
-            <span class="fin-stat-sub" id="heroRomiMultipleSub">Возврат бюджета в 3.8 раза</span>
-          </div>
-
-          <div class="fin-stat-col">
-            <span class="fin-stat-label">Общий бюджет Call-Talk</span>
-            <span class="fin-stat-val-huge dark" id="heroBudgetVal">374 400 руб.</span>
-            <span class="fin-stat-sub" id="heroBudgetBreakdownSub">156 000 руб. фикс + 78 лидов</span>
-          </div>
-        </div>
-
-        <!-- ==================== 3. ВЫВОДЫ ПО ОКУПАЕМОСТИ (ВМЕСТО "ЧТО СКАЗАТЬ КЛИЕНТУ") ==================== -->
-        <div class="conclusions-card">
-          <div class="conclusions-header">
-            <div class="conclusions-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-              Выводы по окупаемости
-            </div>
-            <button id="btnCopyConclusions" class="btn btn-sm btn-outline-primary" title="Скопировать выводы">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              Скопировать выводы
-            </button>
-          </div>
-          <div class="conclusions-list" id="conclusionsList">
-            <!-- Rendered dynamically by JS -->
-          </div>
-        </div>
-
-        <!-- ==================== РАЗДЕЛИТЕЛЬ: ВТОРОСТЕПЕННЫЕ ПОКАЗАТЕЛИ ==================== -->
-        <div class="secondary-divider">
-          <span class="secondary-divider-line"></span>
-          <span class="secondary-divider-text">Детализация воронки и график платежей</span>
-          <span class="secondary-divider-line"></span>
-        </div>
-
-        <!-- ==================== 4. ВТОРОСТЕПЕННЫЕ МЕТРИКИ (СДВИНУТЫ НИЖЕ) ==================== -->
-        <div class="metrics-cards-grid">
-          <!-- Box 1: Revenue -->
-          <div class="stat-box">
-            <div class="stat-box-header">
-              <span class="stat-box-title">Привлеченный оборот (выручка)</span>
-              <svg class="stat-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-            </div>
-            <div class="stat-box-val" id="statRevenueVal">12 000 000 руб.</div>
-            <div class="stat-box-footer" id="statCostShareVal">Доля затрат в обороте: ~3.1%</div>
-          </div>
-
-          <!-- Box 2: Closed Deals -->
-          <div class="stat-box">
-            <div class="stat-box-header">
-              <span class="stat-box-title">Прогноз закрытых сделок</span>
-              <svg class="stat-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-            </div>
-            <div class="stat-box-val" id="statDealsVal">12 сделок</div>
-            <div class="stat-box-footer" id="statDealsProfit">Маржа со сделки: 120 000 руб.</div>
-          </div>
-
-          <!-- Box 3: Leads -->
-          <div class="stat-box">
-            <div class="stat-box-header">
-              <span class="stat-box-title">Переданных лидов за срок</span>
-              <svg class="stat-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            </div>
-            <div class="stat-box-val" id="statLeadsVal">78 лидов</div>
-            <div class="stat-box-footer" id="statLeadsRange">Диапазон: 63–94 лида</div>
-          </div>
-
-          <!-- Box 4: CAC -->
-          <div class="stat-box">
-            <div class="stat-box-header">
-              <span class="stat-box-title">Стоимость привлечения (CAC)</span>
-              <svg class="stat-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-            </div>
-            <div class="stat-box-val" id="statCacVal">31 200 руб.</div>
-            <div class="stat-box-footer" id="statCacCompare">Приносит выручки: 1,0 млн руб.</div>
-          </div>
-        </div>
-
-        <!-- MONTHLY TIMELINE TABLE -->
+        <!-- ==================== 1. ПОМЕСЯЧНЫЙ ПЛАН И ПЛАТЕЖИ (ВЫШЕ ВСЕХ!) ==================== -->
         <div class="table-card">
           <div class="table-title-row">
-            <span class="table-title">Помесячная воронка и график платежей</span>
-            <span class="table-badge" id="tableBadgePeriod">Спринты по 1 мес</span>
+            <span class="table-title">Помесячный план и платежи</span>
+            <span class="table-badge" id="tableBadgePeriod">Срок: 4 месяца</span>
           </div>
 
           <table class="funnel-table">
             <thead>
               <tr>
                 <th>Период</th>
-                <th>База</th>
-                <th>Писем</th>
-                <th>Лиды</th>
-                <th>Сделки</th>
-                <th>Затраты</th>
+                <th>Лиды (план)</th>
+                <th>Сделки (прогноз)</th>
+                <th>Оплата Call-Talk</th>
               </tr>
             </thead>
             <tbody id="funnelTableBody">
-              <!-- Rendered dynamically by JS -->
+              <!-- Rendered dynamically -->
             </tbody>
           </table>
         </div>
 
-        <!-- VALID LEAD CRITERIA & BUDGET GUARANTEE -->
-        <div class="criteria-box">
-          <div class="criteria-col">
-            <div class="criteria-heading green">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              Критерии валидного лида:
+        <!-- ==================== 2. ПОКАЗАТЕЛИ ОКУПАЕМОСТИ И ТОЧКА БЕЗУБЫТОЧНОСТИ ==================== -->
+        <div class="breakeven-card">
+          
+          <div class="be-title-wrap">
+            <span class="be-label-lead">Точка безубыточности:</span>
+            <div class="be-headline" id="breakevenBigText">
+              Достаточно закрыть <span class="highlight-deals">всего 4 сделки</span> из 78 лидов
             </div>
-            <ul class="criteria-list">
-              <li>ЛПР подтвердил интерес к теме предложения</li>
-              <li>Запросил КП, прайс, расчет или условия</li>
-              <li>Согласовал встречу / звонок (или передал контакт)</li>
-              <li>Передал прямой контакт профильного лица</li>
-            </ul>
           </div>
 
-          <div class="criteria-col">
-            <div class="criteria-heading coral">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              100% защита бюджета клиента:
+          <!-- 2 Key Indicators -->
+          <div class="be-indicators-grid">
+            <div class="be-ind-col">
+              <span class="be-ind-label">Сделок для возврата бюджета</span>
+              <span class="be-ind-val" id="beDealsVal">4 сделки</span>
+              <span class="be-ind-sub" id="beProfitPerDealSub">Маржа со сделки: 120 000 руб.</span>
             </div>
-            <ul class="criteria-list">
-              <li>Отказы («не интересно», «не актуально») — 0 руб.</li>
-              <li>Автоответы почтовых серверов — 0 руб.</li>
-              <li>Нецелевые контакты и спам — 0 руб.</li>
-              <li>Оплата только по факту подтвержденного диалога</li>
-            </ul>
+
+            <div class="be-ind-col">
+              <span class="be-ind-label">Необходимая конверсия в сделку</span>
+              <span class="be-ind-val accent" id="beConversionVal">всего 4.0%</span>
+              <span class="be-ind-sub" id="beConversionSub">Окупается, даже если 96% лидов не купят</span>
+            </div>
+          </div>
+
+          <!-- Progress scale -->
+          <div class="be-progress-wrap">
+            <div class="be-progress-labels">
+              <span id="beLabelBreakEven">🎯 4 сделки окупают бюджет (374 400 руб.)</span>
+              <span id="beLabelProfitDeals" class="text-teal">💰 Еще 8 сделок — чистая прибыль</span>
+            </div>
+            <div class="be-progress-bar">
+              <div class="be-progress-fill-be" id="beProgressFillBe" style="width: 33%;"></div>
+              <div class="be-progress-fill-profit" id="beProgressFillProfit" style="width: 67%;"></div>
+            </div>
+          </div>
+
+          <div class="be-summary-text" id="breakevenExplanationText">
+            При среднем чеке 1 000 000 руб. и марже 12% валовая прибыль со сделки составляет 120 000 руб.. Все расходы на проект (374 400 руб.) окупаются с 4-й закрытой сделки. Оставшиеся сделки первого цикла приносят чистую прибыль.
+          </div>
+
+        </div>
+
+        <!-- ==================== 3. ФИНАНСОВЫЙ ИТОГ ==================== -->
+        <div class="financial-summary-card">
+          <div class="fin-stat-col">
+            <span class="fin-stat-label">Чистая прибыль</span>
+            <span class="fin-stat-val-huge green" id="heroNetProfitVal">+1 065 600 руб.</span>
+            <span class="fin-stat-sub" id="heroNetProfitSub">При конверсии 15% (12 сделок)</span>
+          </div>
+
+          <div class="fin-stat-col">
+            <span class="fin-stat-label">Окупаемость затрат (ROI)</span>
+            <span class="fin-stat-val-huge purple" id="heroRoiVal">+285%</span>
+            <span class="fin-stat-sub" id="heroRomiMultipleSub">Возврат бюджета в 3.8 раза</span>
+          </div>
+
+          <div class="fin-stat-col">
+            <span class="fin-stat-label">Бюджет Call-Talk</span>
+            <span class="fin-stat-val-huge dark" id="heroBudgetVal">374 400 руб.</span>
+            <span class="fin-stat-sub" id="heroBudgetBreakdownSub">156 000 руб. фикс + 78 лидов</span>
+          </div>
+        </div>
+
+        <!-- ==================== 4. ВЫВОДЫ ПО ОКУПАЕМОСТИ ==================== -->
+        <div class="conclusions-card">
+          <div class="conclusions-header">
+            <span class="conclusions-title">Выводы по окупаемости</span>
+            <button id="btnCopyConclusions" class="btn btn-sm btn-outline-primary" title="Скопировать выводы">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Скопировать выводы
+            </button>
+          </div>
+          <div class="conclusions-list" id="conclusionsList">
+            <!-- 3 clean bullet points rendered by JS -->
           </div>
         </div>
 
