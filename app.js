@@ -110,6 +110,7 @@ const DOM = {
   ltvSubpanel: document.getElementById('ltvSubpanel'),
   ltvSlider: document.getElementById('ltvSlider'),
   ltvMultiplierDisplay: document.getElementById('ltvMultiplierDisplay'),
+  quickLtvPills: document.querySelectorAll('.pill-ltv'),
 
   // Monthly Table
   tableBadgePeriod: document.getElementById('tableBadgePeriod'),
@@ -339,6 +340,13 @@ function bindEvents() {
     render();
   });
 
+  DOM.quickLtvPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      state.ltvRepeatDeals = parseInt(pill.dataset.ltv, 10);
+      render();
+    });
+  });
+
   // Action Buttons
   DOM.btnCopyOffer.addEventListener('click', copyClientSummary);
   DOM.btnShareLink.addEventListener('click', copyShareableLink);
@@ -491,7 +499,12 @@ function render() {
   DOM.ltvToggle.checked = state.ltvEnabled;
   DOM.ltvSubpanel.style.display = state.ltvEnabled ? 'block' : 'none';
   DOM.ltvSlider.value = state.ltvRepeatDeals;
-  DOM.ltvMultiplierDisplay.textContent = `+${state.ltvRepeatDeals} ${pluralDeals(state.ltvRepeatDeals)}`;
+  DOM.ltvMultiplierDisplay.textContent = `+${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)}`;
+
+  DOM.quickLtvPills.forEach(pill => {
+    const pLtv = parseInt(pill.dataset.ltv, 10);
+    pill.classList.toggle('active', pLtv === state.ltvRepeatDeals);
+  });
 
   // ==================== 1. ТОЧКА БЕЗУБЫТОЧНОСТИ ====================
   DOM.breakevenBigText.innerHTML = `
@@ -555,6 +568,15 @@ function pluralDeals(n) {
   if (mod10 === 1) return 'сделка';
   if (mod10 >= 2 && mod10 <= 4) return 'сделки';
   return 'сделок';
+}
+
+function pluralOrders(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 19) return 'заказов';
+  if (mod10 === 1) return 'заказ';
+  if (mod10 >= 2 && mod10 <= 4) return 'заказа';
+  return 'заказов';
 }
 
 // Render Monthly Plan Table (4 columns, clean & readable)
@@ -733,7 +755,7 @@ function loadUrlParams() {
 
   if (params.has('boxes')) {
     const b = parseInt(params.get('boxes'), 10);
-    if ([10, 20, 30].includes(b)) state.mailboxesCount = b;
+    if ([10, 15, 20, 30].includes(b)) state.mailboxesCount = b;
   }
 
   if (params.has('lp')) {
@@ -765,7 +787,7 @@ function loadUrlParams() {
     state.ltvEnabled = true;
     if (params.has('rep')) {
       const rep = parseInt(params.get('rep'), 10);
-      if (rep >= 1 && rep <= 10) state.ltvRepeatDeals = rep;
+      if (rep >= 1 && rep <= 30) state.ltvRepeatDeals = rep;
     }
   }
 }

@@ -292,15 +292,15 @@ h1, h2, h3, h4 {
 /* Mailboxes Selector */
 .mailboxes-selector-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
 }
 
 .mailbox-btn {
   background: #FFFFFF;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 9px 8px;
+  padding: 8px 4px;
   display: flex;
   align-items: center;
   justify-content: center;

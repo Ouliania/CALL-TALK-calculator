@@ -88,6 +88,9 @@
             <button type="button" class="mailbox-btn active" data-boxes="10">
               <span class="mailbox-num">10 ящиков</span>
             </button>
+            <button type="button" class="mailbox-btn" data-boxes="15">
+              <span class="mailbox-num">15 ящиков</span>
+            </button>
             <button type="button" class="mailbox-btn" data-boxes="20">
               <span class="mailbox-num">20 ящиков</span>
             </button>
@@ -113,7 +116,7 @@
             </div>
           </div>
 
-          <!-- Прогноз переданных лидов (считается от ящиков 10/20/30, но меняется вручную) -->
+          <!-- Прогноз переданных лидов (считается от ящиков 10/15/20/30, но меняется вручную) -->
           <div class="input-clean-row" style="margin-top: 10px;">
             <label for="leadsCountInput" class="clean-field-label">Прогноз лидов за срок:</label>
             <div class="currency-input-wrapper">
@@ -144,6 +147,9 @@
             </div>
             <input type="range" id="dealCheckSlider" min="10000" max="20000000" step="10000" value="1000000">
             <div class="quick-pills">
+              <button class="pill-btn" data-check="30000">30 тыс.</button>
+              <button class="pill-btn" data-check="50000">50 тыс.</button>
+              <button class="pill-btn" data-check="100000">100 тыс.</button>
               <button class="pill-btn" data-check="300000">300 тыс.</button>
               <button class="pill-btn" data-check="500000">500 тыс.</button>
               <button class="pill-btn active" data-check="1000000">1 млн</button>
@@ -152,7 +158,7 @@
             </div>
           </div>
 
-          <!-- Маржа % (10–12%, МАКСИМУМ 15%) -->
+          <!-- Маржа % -->
           <div class="input-with-slider" style="margin-bottom: 14px;">
             <div class="field-header">
               <span>Маржинальность (чистая маржа)</span>
@@ -164,11 +170,15 @@
                 <span class="input-suffix">%</span>
               </div>
             </div>
-            <input type="range" id="marginSlider" min="5" max="30" step="1" value="12">
+            <input type="range" id="marginSlider" min="5" max="60" step="1" value="12">
             <div class="quick-pills">
               <button class="pill-btn pill-margin" data-margin="10">10%</button>
               <button class="pill-btn pill-margin active" data-margin="12">12%</button>
               <button class="pill-btn pill-margin" data-margin="15">15%</button>
+              <button class="pill-btn pill-margin" data-margin="20">20%</button>
+              <button class="pill-btn pill-margin" data-margin="25">25%</button>
+              <button class="pill-btn pill-margin" data-margin="30">30%</button>
+              <button class="pill-btn pill-margin" data-margin="50">50%</button>
             </div>
             <div class="clean-note" id="marginProfitPerDealNote">
               Валовая прибыль с 1 сделки: 120 000 руб.
@@ -193,6 +203,7 @@
               <button class="pill-btn pill-conv" data-conv="10">10%</button>
               <button class="pill-btn pill-conv active" data-conv="15">15%</button>
               <button class="pill-btn pill-conv" data-conv="20">20%</button>
+              <button class="pill-btn pill-conv" data-conv="30">30%</button>
             </div>
           </div>
 
@@ -212,7 +223,13 @@
               <span>Повторных сделок в год</span>
               <span id="ltvMultiplierDisplay" class="field-val-badge">+2 заказа</span>
             </div>
-            <input type="range" id="ltvSlider" min="1" max="10" step="1" value="2">
+            <input type="range" id="ltvSlider" min="1" max="15" step="1" value="2">
+            <div class="quick-pills">
+              <button type="button" class="pill-btn pill-ltv active" data-ltv="2">+2 заказа</button>
+              <button type="button" class="pill-btn pill-ltv" data-ltv="3">+3 заказа</button>
+              <button type="button" class="pill-btn pill-ltv" data-ltv="5">+5 заказов</button>
+              <button type="button" class="pill-btn pill-ltv" data-ltv="12">+12 заказов</button>
+            </div>
           </div>
 
         </div>
