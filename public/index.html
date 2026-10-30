@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%235B4BD8%22/><text y=%2265%22 x=%2250%22 text-anchor=%22middle%22 font-size=%2252%22 font-family=%22system-ui%22 font-weight=%22800%22 fill=%22white%22>CT</text></svg>">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="https://static.tildacdn.com/tild3437-6364-4433-a336-346435333435/favicon.svg">
 </head>
 <body>
 
@@ -20,16 +20,26 @@
   <header class="app-header">
     <div class="container header-inner">
       <div class="brand-wrapper">
-        <div class="brand-logo-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-          </svg>
-          CALL-TALK
-        </div>
+        <a href="https://calltalk.ru/" class="brand-logo-link" target="_blank" rel="noopener" title="Перейти на сайт Call-Talk">
+          <div class="brand-logo-bubble">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 4a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6l-4 4V4z"/>
+            </svg>
+          </div>
+          <span class="brand-name">Call-Talk</span>
+        </a>
+        <span class="brand-divider">/</span>
         <span class="brand-title">Калькулятор окупаемости B2B-аутрича</span>
       </div>
 
       <div class="header-actions">
+        <a href="https://calltalk.ru/keyses/" target="_blank" rel="noopener" class="btn btn-ghost header-cases-link" title="Посмотреть разбор кейсов Call-Talk">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span>Кейсы</span>
+        </a>
         <button id="btnCopyOffer" class="btn btn-primary" title="Скопировать расчет">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
           Скопировать расчет
@@ -413,7 +423,157 @@
 
     </div>
 
+    <!-- Ниши и отрасли, с которыми мы работаем -->
+    <section class="niches-section">
+      <div class="niches-header">
+        <span class="niches-eyebrow">Опыт в 60+ B2B-отраслях</span>
+        <h2 class="niches-title">Отрасли и направления, с которыми мы работаем</h2>
+        <p class="niches-desc">
+          B2B-компании с высоким средним чеком (от 300 000 руб.) и повторными заказами: от заводов и опта до заказной IT-разработки и сложного сервиса.
+        </p>
+      </div>
+
+      <div class="niches-grid">
+        <div class="niche-card">
+          <span class="niche-icon">🏭</span>
+          <div class="niche-info">
+            <span class="niche-name">Производство и металлоконструкции</span>
+            <span class="niche-detail">Заводы, металлообработка, каркасы зданий, фасадные подсистемы под заказ</span>
+          </div>
+        </div>
+
+        <div class="niche-card">
+          <span class="niche-icon">💻</span>
+          <div class="niche-info">
+            <span class="niche-name">Заказное IT и B2B SaaS</span>
+            <span class="niche-detail">Разработка корпоративного ПО, интеграции CRM/ERP, подписочные сервисы</span>
+          </div>
+        </div>
+
+        <div class="niche-card">
+          <span class="niche-icon">📦</span>
+          <div class="niche-info">
+            <span class="niche-name">Оптовые поставки и упаковка</span>
+            <span class="niche-detail">Производство картонной тары, флористика, полиграфия, регулярные поставки</span>
+          </div>
+        </div>
+
+        <div class="niche-card">
+          <span class="niche-icon">⚙️</span>
+          <div class="niche-info">
+            <span class="niche-name">Промышленное оборудование</span>
+            <span class="niche-detail">Станки, производственные линии, запчасти и спецтехника для предприятий</span>
+          </div>
+        </div>
+
+        <div class="niche-card">
+          <span class="niche-icon">🚚</span>
+          <div class="niche-info">
+            <span class="niche-name">Логистика, ВЭД и склады</span>
+            <span class="niche-detail">Сборные и контейнерные грузоперевозки, таможенное оформление, склады</span>
+          </div>
+        </div>
+
+        <div class="niche-card">
+          <span class="niche-icon">🛡️</span>
+          <div class="niche-info">
+            <span class="niche-name">Охрана труда и безопасность</span>
+            <span class="niche-detail">Аутсорсинг документации для заводов, СОУТ, пожарный аудит и регламенты</span>
+          </div>
+        </div>
+
+        <div class="niche-card">
+          <span class="niche-icon">📈</span>
+          <div class="niche-info">
+            <span class="niche-name">B2B-консалтинг и услуги</span>
+            <span class="niche-detail">Налоговый аудит, юридическое сопровождение, страхование грузов и бизнеса</span>
+          </div>
+        </div>
+
+        <div class="niche-card">
+          <span class="niche-icon">☕</span>
+          <div class="niche-info">
+            <span class="niche-name">HoReCa и корпоративные поставки</span>
+            <span class="niche-detail">Обжарка specialty-кофе для ресторанов, аромамаркетинг, подарки для бизнеса</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="niches-footer-link">
+        <a href="https://calltalk.ru/keyses/" target="_blank" rel="noopener" class="btn-niche-cases">
+          Посмотреть реальные цифры и разбор 10 кейсов Call-Talk →
+        </a>
+      </div>
+    </section>
+
   </main>
+
+  <!-- Site Footer -->
+  <footer class="app-footer">
+    <div class="container footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand-col">
+          <a href="https://calltalk.ru/" class="footer-logo" target="_blank" rel="noopener">
+            <div class="footer-logo-bubble">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 4a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6l-4 4V4z"/>
+              </svg>
+            </div>
+            <span class="footer-logo-text">Call-Talk</span>
+          </a>
+          <p class="footer-brand-desc">
+            B2B-лидогенерация через холодный email-аутрич под ключ. Оплата за квалифицированные лиды с подтвержденным интересом.
+          </p>
+          <div class="footer-badges">
+            <span class="footer-badge">🔒 152-ФЗ и 38-ФЗ</span>
+            <span class="footer-badge">🎯 Оплата за интерес</span>
+            <span class="footer-badge">🛡️ Защита бюджета</span>
+          </div>
+        </div>
+
+        <div class="footer-nav-col">
+          <span class="footer-nav-title">Материалы и кейсы</span>
+          <ul class="footer-nav-list">
+            <li><a href="https://calltalk.ru/keyses/" target="_blank" rel="noopener">Реальные кейсы B2B</a></li>
+            <li><a href="https://calltalk.ru/email-outreach/" target="_blank" rel="noopener">Технология email-аутрича</a></li>
+            <li><a href="https://calltalk.ru/founder/" target="_blank" rel="noopener">Об основателе (Игорь Ермолаев)</a></li>
+            <li><a href="https://calltalk.ru/pdf-1" target="_blank" rel="noopener">Презентации и регламенты</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-nav-col">
+          <span class="footer-nav-title">Сервис и сайт</span>
+          <ul class="footer-nav-list">
+            <li><a href="https://calltalk.ru/" target="_blank" rel="noopener">Официальный сайт</a></li>
+            <li><a href="https://calltalk.ru/blog/" target="_blank" rel="noopener">Блог и статьи</a></li>
+            <li><a href="https://calltalk.ru/partners/" target="_blank" rel="noopener">Партнерская программа</a></li>
+            <li><a href="https://t.me/calltalk_ru" target="_blank" rel="noopener">Telegram-канал</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-nav-col">
+          <span class="footer-nav-title">Юридический блок</span>
+          <ul class="footer-nav-list">
+            <li><a href="https://calltalk.ru/politika-confitecialnosti/" target="_blank" rel="noopener">Политика конфиденциальности</a></li>
+            <li><a href="https://calltalk.ru/soglasie-na-obrabotky-personalnih-dannih/" target="_blank" rel="noopener">Обработка данных</a></li>
+            <li><a href="https://calltalk.ru/polzavatelskoe-soglashenie/" target="_blank" rel="noopener">Пользовательское соглашение</a></li>
+            <li><a href="https://t.me/calltalk_ru" target="_blank" rel="noopener">Связаться в Telegram</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span class="footer-copy">© 2026 Call-Talk. Агентство B2B-лидогенерации. Все права защищены.</span>
+        <div class="footer-bottom-links">
+          <a href="https://calltalk.ru/" target="_blank" rel="noopener">calltalk.ru</a>
+          <span class="footer-dot">•</span>
+          <a href="https://calltalk.ru/keyses/" target="_blank" rel="noopener">Кейсы</a>
+          <span class="footer-dot">•</span>
+          <a href="https://t.me/calltalk_ru" target="_blank" rel="noopener">Telegram @calltalk_ru</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
