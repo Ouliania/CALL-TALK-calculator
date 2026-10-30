@@ -112,16 +112,21 @@ const DOM = {
   ltvMultiplierDisplay: document.getElementById('ltvMultiplierDisplay'),
   quickLtvPills: document.querySelectorAll('.pill-ltv'),
 
+  // Forecast & Revenue (Hero Block at Top)
+  forecastHeadline: document.getElementById('forecastHeadline'),
+  forecastDealsVal: document.getElementById('forecastDealsVal'),
+  forecastRevenueVal: document.getElementById('forecastRevenueVal'),
+  forecastSubText: document.getElementById('forecastSubText'),
+  heroRevenueVal: document.getElementById('heroRevenueVal'),
+  heroRevenueSub: document.getElementById('heroRevenueSub'),
+
   // Monthly Table
   tableBadgePeriod: document.getElementById('tableBadgePeriod'),
   funnelTableBody: document.getElementById('funnelTableBody'),
 
-  // Break-even
+  // Break-even (Compact, lower)
   breakevenBigText: document.getElementById('breakevenBigText'),
-  beDealsVal: document.getElementById('beDealsVal'),
-  beProfitPerDealSub: document.getElementById('beProfitPerDealSub'),
-  beConversionVal: document.getElementById('beConversionVal'),
-  beConversionSub: document.getElementById('beConversionSub'),
+  bePillConv: document.getElementById('bePillConv'),
   beLabelBreakEven: document.getElementById('beLabelBreakEven'),
   beLabelProfitDeals: document.getElementById('beLabelProfitDeals'),
   beProgressFillBe: document.getElementById('beProgressFillBe'),
@@ -506,14 +511,42 @@ function render() {
     pill.classList.toggle('active', pLtv === state.ltvRepeatDeals);
   });
 
-  // ==================== 1. ТОЧКА БЕЗУБЫТОЧНОСТИ ====================
+  // ==================== 1. ПРОГНОЗ ПРОДАЖ И ФИНАНСОВЫЙ ИТОГ (ГЛАВНЫЙ БЛОК НАВЕРХУ) ====================
+  if (DOM.forecastDealsVal) DOM.forecastDealsVal.textContent = `${m.dealsCount} ${pluralDeals(m.dealsCount)}`;
+  if (DOM.forecastRevenueVal) DOM.forecastRevenueVal.textContent = fmt.rub(m.grossRevenue);
+  if (DOM.forecastSubText) {
+    if (state.ltvEnabled) {
+      DOM.forecastSubText.textContent = `Из ${m.leadsCount} лидов при конверсии ${state.conversionPercent}% (с учетом LTV: +${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)})`;
+    } else {
+      DOM.forecastSubText.textContent = `Из ${m.leadsCount} лидов с подтвержденным интересом при конверсии отдела продаж ${state.conversionPercent}%`;
+    }
+  }
+
+  // 4 Financial Stat Cards
+  if (DOM.heroRevenueVal) DOM.heroRevenueVal.textContent = fmt.rub(m.grossRevenue);
+  if (DOM.heroRevenueSub) DOM.heroRevenueSub.textContent = `${m.dealsCount} ${pluralDeals(m.dealsCount)} по ${fmt.rub(state.dealCheck)}${state.ltvEnabled ? ` (+LTV)` : ''}`;
+
+  DOM.heroNetProfitVal.textContent = `${m.netProfit >= 0 ? '+' : ''}${fmt.rub(m.netProfit)}`;
+  DOM.heroNetProfitVal.style.color = m.netProfit >= 0 ? 'var(--teal)' : '#DC2626';
+  DOM.heroNetProfitSub.textContent = `Чистыми сверх всех затрат`;
+
+  DOM.heroRoiVal.textContent = fmt.pct(m.roi);
+  DOM.heroRoiVal.style.color = m.roi >= 0 ? 'var(--primary)' : '#DC2626';
+  DOM.heroRomiMultipleSub.textContent = `Возврат бюджета в ${m.romiMultiple} раза`;
+
+  DOM.heroBudgetVal.textContent = fmt.rub(m.totalBudget);
+  DOM.heroBudgetBreakdownSub.textContent = `${fmt.rub(m.fixTotal)} фикс + ${m.leadsCount} лидов`;
+
+  // ==================== 2. ПОМЕСЯЧНЫЙ ПЛАН И ПЛАТЕЖИ ====================
+  renderMonthlyTable(m);
+
+  // ==================== 3. ТОЧКА БЕЗУБЫТОЧНОСТИ (ПОРОГ ОКУПАЕМОСТИ, НИЖЕ) ====================
   DOM.breakevenBigText.innerHTML = `
-    Достаточно закрыть <span class="highlight-deals">всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}</span> из ${m.leadsCount} лидов
+    Достаточно закрыть <span class="highlight-be-deals">всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}</span> из ${m.leadsCount} лидов
   `;
-  DOM.beDealsVal.textContent = `${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}`;
-  DOM.beProfitPerDealSub.textContent = `Маржа со сделки: ${fmt.rub(m.profitPerDeal)} (${state.marginPercent}%)`;
-  DOM.beConversionVal.textContent = `всего ${m.breakEvenConversion}%`;
-  DOM.beConversionSub.textContent = `Окупается, даже если ${Math.round(100 - parseFloat(m.breakEvenConversion))}% лидов не купят`;
+  if (DOM.bePillConv) {
+    DOM.bePillConv.textContent = `Порог конверсии: ${m.breakEvenConversion}%`;
+  }
 
   // Scale
   const beRatio = Math.min(100, Math.max(8, Math.round((m.dealsToBreakEven / Math.max(m.dealsCount, m.dealsToBreakEven)) * 100)));
@@ -537,21 +570,6 @@ function render() {
     <strong>${m.dealsToBreakEven}-й закрытой сделки</strong>. 
     ${m.profitDealsCount > 0 ? `Оставшиеся <strong>${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие закрытые сделки приносят чистую прибыль.`}
   `;
-
-  // ==================== 2. ФИНАНСОВЫЙ ИТОГ (ЧИСТАЯ ПРИБЫЛЬ) ====================
-  DOM.heroNetProfitVal.textContent = `${m.netProfit >= 0 ? '+' : ''}${fmt.rub(m.netProfit)}`;
-  DOM.heroNetProfitVal.style.color = m.netProfit >= 0 ? 'var(--teal)' : '#DC2626';
-  DOM.heroNetProfitSub.textContent = `При конверсии ${state.conversionPercent}% (${m.dealsCount} ${pluralDeals(m.dealsCount)})`;
-
-  DOM.heroRoiVal.textContent = fmt.pct(m.roi);
-  DOM.heroRoiVal.style.color = m.roi >= 0 ? 'var(--primary)' : '#DC2626';
-  DOM.heroRomiMultipleSub.textContent = `Возврат бюджета в ${m.romiMultiple} раза`;
-
-  DOM.heroBudgetVal.textContent = fmt.rub(m.totalBudget);
-  DOM.heroBudgetBreakdownSub.textContent = `${fmt.rub(m.fixTotal)} фикс + ${m.leadsCount} лидов`;
-
-  // ==================== 3. ПОМЕСЯЧНЫЙ ПЛАН (ПОСЛЕ ЧИСТОЙ ПРИБЫЛИ) ====================
-  renderMonthlyTable(m);
 
   // ==================== 4. ВЫВОДЫ (ПО ИЛЬЯХОВУ) ====================
   renderConclusions(m);
@@ -628,21 +646,21 @@ function renderMonthlyTable(m) {
 function renderConclusions(m) {
   DOM.conclusionsList.innerHTML = `
     <div class="conclusion-item">
-      <svg class="conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <svg class="conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
       <div>
-        <strong>Точка безубыточности:</strong> чтобы вернуть 100% бюджета проекта (${fmt.rub(m.totalBudget)}), достаточно закрыть 
-        <strong>всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов</strong>. 
-        Это конверсия <strong>всего ${m.breakEvenConversion}%</strong>.
+        <strong>Прогноз продаж и дохода:</strong> при конверсии отдела продаж ${state.conversionPercent}% прогнозируется 
+        <strong>${m.dealsCount} ${pluralDeals(m.dealsCount)}</strong> из ${m.leadsCount} лидов. Это дает 
+        <strong>${fmt.rub(m.grossRevenue)} привлеченной выручки</strong> и 
+        <strong>+${fmt.rub(m.netProfit)} чистой прибыли</strong> сверх всех затрат на Call-Talk (возврат бюджета в ${m.romiMultiple} раза).
       </div>
     </div>
 
     <div class="conclusion-item">
-      <svg class="conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+      <svg class="conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
       <div>
-        <strong>Прогноз дохода:</strong> при стандартной конверсии ${state.conversionPercent}% отдел продаж закрывает 
-        <strong>${m.dealsCount} ${pluralDeals(m.dealsCount)}</strong>, что дает 
-        <strong>${fmt.rub(m.grossRevenue)} выручки</strong> и 
-        <strong>+${fmt.rub(m.netProfit)} чистой прибыли</strong> сверх всех затрат (возврат бюджета в ${m.romiMultiple} раза).
+        <strong>Защита от рисков (порог окупаемости):</strong> чтобы полностью вернуть бюджет (${fmt.rub(m.totalBudget)}), достаточно закрыть 
+        <strong>всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}</strong> (конверсия <strong>всего ${m.breakEvenConversion}%</strong>). 
+        Проект окупается, даже если ${Math.round(100 - parseFloat(m.breakEvenConversion))}% лидов ответят отказом.
       </div>
     </div>
 
@@ -650,7 +668,7 @@ function renderConclusions(m) {
       <svg class="conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
       <div>
         <strong>Оплата за результат:</strong> фикс покрывает подготовку и инфраструктуру на базе <strong>${state.mailboxesCount} ящиков Яндекс 360</strong>. 
-        Лиды оплачиваются только при подтвержденном интересе ЛПР. Отказы и нецелевые контакты — 0 руб.
+        Лиды оплачиваются только при подтвержденном интересе ЛПР. Нецелевые контакты — 0 руб.
       </div>
     </div>
   `;
@@ -661,25 +679,25 @@ function copyClientSummary() {
   const m = calculateMetrics();
 
   const text = `
-Расчет окупаемости Call-Talk:
+Расчет результатов проекта Call-Talk:
 
-• Срок договора: ${state.tariffMonths} месяца
-• Почтовая инфраструктура: ${state.mailboxesCount} ящиков Яндекс 360
-• Прогноз лидов: ${m.leadsCount} лидов с подтвержденным интересом
-• Ставка за лид: ${fmt.rub(m.currentLeadPrice)} (отказы и спам — 0 руб.)
-• Фикс за инфраструктуру: ${fmt.rubPerMonth(state.tariffFixPerMonth)} (${fmt.rub(m.fixTotal)} за весь срок)
-• Общий бюджет проекта: ${fmt.rub(m.totalBudget)}
-
-Точка безубыточности:
-При среднем чеке ${fmt.rub(state.dealCheck)} и марже ${state.marginPercent}% валовая прибыль со сделки составляет ${fmt.rub(m.profitPerDeal)}.
-Для полной окупаемости проекта достаточно закрыть ВСЕГО ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов (конверсия всего ${m.breakEvenConversion}%).
-${m.profitDealsCount > 0 ? `Оставшиеся ${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)} первого цикла приносят чистую прибыль.` : `Все последующие закрытые сделки приносят чистую прибыль.`}
-
-Прогноз при конверсии ${state.conversionPercent}%:
-• Закрытых сделок: ${m.dealsCount} ${pluralDeals(m.dealsCount)}
+Прогноз продаж:
+• Закрытых сделок: ${m.dealsCount} ${pluralDeals(m.dealsCount)} из ${m.leadsCount} лидов (конверсия ${state.conversionPercent}%)
 • Привлеченная выручка: ${fmt.rub(m.grossRevenue)}
 • Чистая прибыль сверх затрат: +${fmt.rub(m.netProfit)}
 • Окупаемость затрат (ROI): ${fmt.pct(m.roi)} (возврат бюджета в ${m.romiMultiple} раза)
+
+Условия проекта:
+• Срок договора: ${state.tariffMonths} месяца
+• Почтовая инфраструктура: ${state.mailboxesCount} ящиков Яндекс 360
+• Прогноз лидов: ${m.leadsCount} лидов с подтвержденным интересом
+• Ставка за лид: ${fmt.rub(m.currentLeadPrice)} (отказы — 0 руб.)
+• Фикс за инфраструктуру: ${fmt.rubPerMonth(state.tariffFixPerMonth)} (${fmt.rub(m.fixTotal)} за весь срок)
+• Общий бюджет проекта: ${fmt.rub(m.totalBudget)}
+
+Порог окупаемости (защита от рисков):
+При среднем чеке ${fmt.rub(state.dealCheck)} и марже ${state.marginPercent}% валовая прибыль со сделки составляет ${fmt.rub(m.profitPerDeal)}.
+Для полной окупаемости проекта достаточно закрыть ВСЕГО ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов (порог конверсии всего ${m.breakEvenConversion}%). Оставшиеся закрытые сделки приносят чистую прибыль.
   `.trim();
 
   navigator.clipboard.writeText(text).then(() => {
@@ -696,8 +714,8 @@ function copyConclusions() {
   const text = `
 Выводы по проекту Call-Talk:
 
-1. Точка безубыточности: для 100% возврата бюджета (${fmt.rub(m.totalBudget)}) достаточно закрыть всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов (конверсия всего ${m.breakEvenConversion}%).
-2. Прогноз дохода: при конверсии ${state.conversionPercent}% прогноз дает ${m.dealsCount} ${pluralDeals(m.dealsCount)}, ${fmt.rub(m.grossRevenue)} выручки и +${fmt.rub(m.netProfit)} чистой прибыли сверх затрат.
+1. Прогноз продаж: при конверсии ${state.conversionPercent}% прогнозируется ${m.dealsCount} ${pluralDeals(m.dealsCount)}, ${fmt.rub(m.grossRevenue)} выручки и +${fmt.rub(m.netProfit)} чистой прибыли сверх затрат (ROI ${fmt.pct(m.roi)}).
+2. Защита от рисков: для 100% возврата бюджета достаточно закрыть всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов (порог конверсии всего ${m.breakEvenConversion}%).
 3. Оплата за результат: фикс покрывает инфраструктуру (${state.mailboxesCount} ящиков Яндекс 360). Лиды оплачиваются только за подтвержденный интерес. Нецелевые ответы — 0 руб.
   `.trim();
 

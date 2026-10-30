@@ -239,71 +239,47 @@
       <!-- RIGHT COLUMN: RESULTS & PLAN -->
       <div class="results-panel">
         
-        <!-- ==================== 1. ПОКАЗАТЕЛИ ОКУПАЕМОСТИ И ТОЧКА БЕЗУБЫТОЧНОСТИ ==================== -->
-        <div class="breakeven-card">
-          
-          <div class="be-title-wrap">
-            <span class="be-label-lead">Точка безубыточности:</span>
-            <div class="be-headline" id="breakevenBigText">
-              Достаточно закрыть <span class="highlight-deals">всего 4 сделки</span> из 78 лидов
+        <!-- ==================== 1. ПРОГНОЗ ПРОДАЖ И ФИНАНСОВЫЙ ИТОГ (ГЛАВНЫЙ БЛОК) ==================== -->
+        <div class="forecast-card">
+          <div class="forecast-header">
+            <span class="forecast-label-lead">Прогноз продаж и финансовый результат:</span>
+            <div class="forecast-headline" id="forecastHeadline">
+              Прогноз: <span class="highlight-deals" id="forecastDealsVal">12 сделок</span> на сумму <span class="highlight-revenue" id="forecastRevenueVal">12 000 000 руб.</span>
+            </div>
+            <div class="forecast-sub" id="forecastSubText">
+              Из 78 лидов с подтвержденным интересом при конверсии отдела продаж 15%
             </div>
           </div>
 
-          <!-- 2 Key Indicators -->
-          <div class="be-indicators-grid">
-            <div class="be-ind-col">
-              <span class="be-ind-label">Сделок для возврата бюджета</span>
-              <span class="be-ind-val" id="beDealsVal">4 сделки</span>
-              <span class="be-ind-sub" id="beProfitPerDealSub">Маржа со сделки: 120 000 руб.</span>
+          <!-- 4 Financial Stat Cards -->
+          <div class="financial-summary-grid">
+            <div class="fin-stat-col">
+              <span class="fin-stat-label">Привлеченная выручка</span>
+              <span class="fin-stat-val-huge blue" id="heroRevenueVal">12 000 000 руб.</span>
+              <span class="fin-stat-sub" id="heroRevenueSub">12 сделок по 1 000 000 руб.</span>
             </div>
 
-            <div class="be-ind-col">
-              <span class="be-ind-label">Необходимая конверсия в сделку</span>
-              <span class="be-ind-val accent" id="beConversionVal">всего 4.0%</span>
-              <span class="be-ind-sub" id="beConversionSub">Окупается, даже если 96% лидов не купят</span>
+            <div class="fin-stat-col">
+              <span class="fin-stat-label">Чистая прибыль</span>
+              <span class="fin-stat-val-huge green" id="heroNetProfitVal">+1 065 600 руб.</span>
+              <span class="fin-stat-sub" id="heroNetProfitSub">Чистыми сверх всех затрат</span>
             </div>
-          </div>
 
-          <!-- Progress scale -->
-          <div class="be-progress-wrap">
-            <div class="be-progress-labels">
-              <span id="beLabelBreakEven">🎯 4 сделки окупают бюджет (374 400 руб.)</span>
-              <span id="beLabelProfitDeals" class="text-teal">💰 Еще 8 сделок — чистая прибыль</span>
+            <div class="fin-stat-col">
+              <span class="fin-stat-label">Окупаемость (ROI)</span>
+              <span class="fin-stat-val-huge purple" id="heroRoiVal">+285%</span>
+              <span class="fin-stat-sub" id="heroRomiMultipleSub">Возврат бюджета в 3.8 раза</span>
             </div>
-            <div class="be-progress-bar">
-              <div class="be-progress-fill-be" id="beProgressFillBe" style="width: 33%;"></div>
-              <div class="be-progress-fill-profit" id="beProgressFillProfit" style="width: 67%;"></div>
+
+            <div class="fin-stat-col">
+              <span class="fin-stat-label">Бюджет Call-Talk</span>
+              <span class="fin-stat-val-huge dark" id="heroBudgetVal">374 400 руб.</span>
+              <span class="fin-stat-sub" id="heroBudgetBreakdownSub">156 000 руб. фикс + 78 лидов</span>
             </div>
-          </div>
-
-          <div class="be-summary-text" id="breakevenExplanationText">
-            При среднем чеке 1 000 000 руб. и марже 12% валовая прибыль со сделки составляет 120 000 руб. Все расходы на проект (374 400 руб.) окупаются с 4-й закрытой сделки. Оставшиеся сделки первого цикла приносят чистую прибыль.
-          </div>
-
-        </div>
-
-        <!-- ==================== 2. ФИНАНСОВЫЙ ИТОГ (ЧИСТАЯ ПРИБЫЛЬ) ==================== -->
-        <div class="financial-summary-card">
-          <div class="fin-stat-col">
-            <span class="fin-stat-label">Чистая прибыль</span>
-            <span class="fin-stat-val-huge green" id="heroNetProfitVal">+1 065 600 руб.</span>
-            <span class="fin-stat-sub" id="heroNetProfitSub">При конверсии 15% (12 сделок)</span>
-          </div>
-
-          <div class="fin-stat-col">
-            <span class="fin-stat-label">Окупаемость затрат (ROI)</span>
-            <span class="fin-stat-val-huge purple" id="heroRoiVal">+285%</span>
-            <span class="fin-stat-sub" id="heroRomiMultipleSub">Возврат бюджета в 3.8 раза</span>
-          </div>
-
-          <div class="fin-stat-col">
-            <span class="fin-stat-label">Бюджет Call-Talk</span>
-            <span class="fin-stat-val-huge dark" id="heroBudgetVal">374 400 руб.</span>
-            <span class="fin-stat-sub" id="heroBudgetBreakdownSub">156 000 руб. фикс + 78 лидов</span>
           </div>
         </div>
 
-        <!-- ==================== 3. ПОМЕСЯЧНЫЙ ПЛАН И ПЛАТЕЖИ (ПОСЛЕ ЧИСТОЙ ПРИБЫЛИ) ==================== -->
+        <!-- ==================== 2. ПОМЕСЯЧНЫЙ ПЛАН И ПЛАТЕЖИ ==================== -->
         <div class="table-card">
           <div class="table-title-row">
             <span class="table-title">Помесячный план и платежи</span>
@@ -323,6 +299,37 @@
               <!-- Rendered dynamically -->
             </tbody>
           </table>
+        </div>
+
+        <!-- ==================== 3. ТОЧКА БЕЗУБЫТОЧНОСТИ (ПОРОГ ОКУПАЕМОСТИ, НИЖЕ) ==================== -->
+        <div class="breakeven-card compact">
+          <div class="be-compact-top">
+            <div>
+              <span class="be-label-lead">Порог окупаемости (защита от рисков):</span>
+              <div class="be-headline-compact" id="breakevenBigText">
+                Достаточно закрыть всего 4 сделки из 78 лидов
+              </div>
+            </div>
+            <div class="be-badge-group">
+              <span class="be-pill-badge" id="bePillConv">Порог конверсии: 4.0%</span>
+            </div>
+          </div>
+
+          <!-- Progress scale -->
+          <div class="be-progress-wrap">
+            <div class="be-progress-labels">
+              <span id="beLabelBreakEven">🎯 4 сделки окупают бюджет (374 400 руб.)</span>
+              <span id="beLabelProfitDeals" class="text-teal">💰 Еще 8 сделок — чистая прибыль</span>
+            </div>
+            <div class="be-progress-bar">
+              <div class="be-progress-fill-be" id="beProgressFillBe" style="width: 33%;"></div>
+              <div class="be-progress-fill-profit" id="beProgressFillProfit" style="width: 67%;"></div>
+            </div>
+          </div>
+
+          <div class="be-summary-text" id="breakevenExplanationText">
+            При среднем чеке 1 000 000 руб. и марже 12% валовая прибыль со сделки составляет 120 000 руб. Все расходы на проект (374 400 руб.) окупаются с 4-й закрытой сделки. Оставшиеся сделки первого цикла приносят чистую прибыль.
+          </div>
         </div>
 
         <!-- ==================== 4. ВЫВОДЫ ПО ОКУПАЕМОСТИ ==================== -->
