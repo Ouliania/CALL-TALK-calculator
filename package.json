@@ -1,7 +1,7 @@
 {
   "name": "calltalk-roi-calculator",
   "version": "1.0.0",
-  "description": "Интерактивный калькулятор окупаемости B2B-аутрича Call-Talk с тарифными планами, расчетом MQL/SQL (x3) и стресс-тестом окупаемости",
+  "description": "Интерактивный калькулятор окупаемости B2B-аутрича Call-Talk с тарифными планами, расчетом подтвержденного интереса и встреч и стресс-тестом окупаемости",
   "scripts": {
     "build": "mkdir -p public && cp index.html styles.css app.js public/",
     "dev": "npx serve public",

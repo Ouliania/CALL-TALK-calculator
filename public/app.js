@@ -67,7 +67,7 @@ const state = {
   ltvEnabled: false,
   ltvMode: 'coeff',         // 'coeff' (разовые покупки / коэффициент) or 'sub' (подписка)
   ltvCoeff: 1.3,            // 1.3 (e.g. 10 deals -> +3 repeat = 13 deals)
-  ltvRepeatDeals: 2         // +2 repeat deals in subscription mode
+  ltvRepeatDeals: 12        // +12 repeat deals in subscription mode (12 заказов в год)
 };
 
 // Base tariff benchmarks (Call-Talk conversion standards)
@@ -449,6 +449,7 @@ function bindEvents() {
   if (DOM.ltvModeCoeffBtn) {
     DOM.ltvModeCoeffBtn.addEventListener('click', () => {
       state.ltvMode = 'coeff';
+      state.ltvCoeff = 1.3;
       render();
     });
   }
@@ -456,6 +457,7 @@ function bindEvents() {
   if (DOM.ltvModeSubBtn) {
     DOM.ltvModeSubBtn.addEventListener('click', () => {
       state.ltvMode = 'sub';
+      state.ltvRepeatDeals = 12;
       render();
     });
   }
