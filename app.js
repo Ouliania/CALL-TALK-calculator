@@ -20,7 +20,21 @@ const fmt = {
   pct: (val) => `${val > 0 ? '+' : ''}${Math.round(val)}%`,
   cleanNum: (str) => {
     if (typeof str === 'number') return str;
-    return parseInt(str.toString().replace(/\D/g, ''), 10) || 0;
+    if (!str) return 0;
+    let s = str.toString().trim().toLowerCase().replace(',', '.');
+    // Millions: млн, mln, m, м
+    const mlnMatch = s.match(/^([\d.]+)\s*(?:млн|mln|m|м)(?:$|[^\p{L}\p{N}]|\s*руб)/iu);
+    if (mlnMatch) {
+      const num = parseFloat(mlnMatch[1]);
+      if (!isNaN(num)) return Math.round(num * 1000000);
+    }
+    // Thousands: тыс, тыщ, k, к, т
+    const thMatch = s.match(/^([\d.]+)\s*(?:тыс|тыщ|k|к|т)(?:$|[^\p{L}\p{N}]|\s*руб)/iu);
+    if (thMatch) {
+      const num = parseFloat(thMatch[1]);
+      if (!isNaN(num)) return Math.round(num * 1000);
+    }
+    return parseInt(s.replace(/\D/g, ''), 10) || 0;
   }
 };
 
@@ -166,36 +180,80 @@ function bindEvents() {
   });
 
   // Lead price input
+  DOM.leadPriceInput.addEventListener('input', (e) => {
+    const val = fmt.cleanNum(e.target.value);
+    if (val > 0) {
+      state.leadPrice = Math.max(1, Math.min(val, 1000000));
+      render();
+    }
+  });
+
   DOM.leadPriceInput.addEventListener('change', (e) => {
     const val = fmt.cleanNum(e.target.value);
-    state.leadPrice = Math.max(500, Math.min(val, 50000));
+    state.leadPrice = Math.max(1, Math.min(val, 1000000));
     render();
+  });
+
+  DOM.leadPriceInput.addEventListener('focus', function() {
+    this.select();
+  });
+
+  DOM.leadPriceInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') e.target.blur();
   });
 
   // Leads count input (manual override)
   DOM.leadsCountInput.addEventListener('input', (e) => {
     const val = parseInt(e.target.value, 10);
     if (val > 0) {
-      state.leadsCount = val;
+      state.leadsCount = Math.max(1, Math.min(val, 50000));
+      render();
     }
-    render();
   });
 
-  // Average deal check
+  DOM.leadsCountInput.addEventListener('focus', function() {
+    this.select();
+  });
+
+  DOM.leadsCountInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') e.target.blur();
+  });
+
+  // Average deal check - SLIDER
   DOM.dealCheckSlider.addEventListener('input', (e) => {
     state.dealCheck = parseInt(e.target.value, 10);
     render();
   });
 
+  // Average deal check - TEXT INPUT (REAL-TIME INPUT FOR ANY CHECK)
+  DOM.dealCheckInput.addEventListener('input', (e) => {
+    const val = fmt.cleanNum(e.target.value);
+    if (val > 0) {
+      state.dealCheck = Math.max(1, Math.min(val, 1000000000));
+      syncSliderToCheck(state.dealCheck);
+      render();
+    }
+  });
+
   DOM.dealCheckInput.addEventListener('change', (e) => {
     const val = fmt.cleanNum(e.target.value);
-    state.dealCheck = Math.max(50000, Math.min(val, 100000000));
+    state.dealCheck = Math.max(1, Math.min(val, 1000000000));
+    syncSliderToCheck(state.dealCheck);
     render();
+  });
+
+  DOM.dealCheckInput.addEventListener('focus', function() {
+    this.select();
+  });
+
+  DOM.dealCheckInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') e.target.blur();
   });
 
   DOM.quickCheckPills.forEach(pill => {
     pill.addEventListener('click', () => {
       state.dealCheck = parseInt(pill.dataset.check, 10);
+      syncSliderToCheck(state.dealCheck);
       render();
     });
   });
@@ -206,10 +264,26 @@ function bindEvents() {
     render();
   });
 
+  DOM.marginInput.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value, 10);
+    if (val > 0) {
+      state.marginPercent = Math.max(1, Math.min(val, 95));
+      render();
+    }
+  });
+
   DOM.marginInput.addEventListener('change', (e) => {
     const val = parseInt(e.target.value, 10) || 12;
     state.marginPercent = Math.max(1, Math.min(val, 95));
     render();
+  });
+
+  DOM.marginInput.addEventListener('focus', function() {
+    this.select();
+  });
+
+  DOM.marginInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') e.target.blur();
   });
 
   DOM.quickMarginPills.forEach(pill => {
@@ -225,10 +299,26 @@ function bindEvents() {
     render();
   });
 
+  DOM.conversionInput.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value, 10);
+    if (val > 0) {
+      state.conversionPercent = Math.max(1, Math.min(val, 95));
+      render();
+    }
+  });
+
   DOM.conversionInput.addEventListener('change', (e) => {
     const val = parseInt(e.target.value, 10) || 15;
     state.conversionPercent = Math.max(1, Math.min(val, 95));
     render();
+  });
+
+  DOM.conversionInput.addEventListener('focus', function() {
+    this.select();
+  });
+
+  DOM.conversionInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') e.target.blur();
   });
 
   DOM.quickConvPills.forEach(pill => {
@@ -319,6 +409,25 @@ function calculateMetrics() {
   };
 }
 
+// Dynamically synchronize deal check slider with any value
+function syncSliderToCheck(val) {
+  let min = 0;
+  let max = 20000000;
+  let step = 10000;
+
+  if (val > 20000000) {
+    max = Math.max(50000000, Math.ceil(val * 1.25 / 1000000) * 1000000);
+    step = 500000;
+  } else if (val < 10000) {
+    step = val < 1000 ? 50 : 500;
+  }
+
+  DOM.dealCheckSlider.min = min;
+  DOM.dealCheckSlider.max = max;
+  DOM.dealCheckSlider.step = step;
+  DOM.dealCheckSlider.value = val;
+}
+
 // Render UI
 function render() {
   const m = calculateMetrics();
@@ -334,14 +443,20 @@ function render() {
     btn.classList.toggle('active', boxes === state.mailboxesCount);
   });
 
-  // 3. Leads Inputs
-  DOM.leadPriceInput.value = fmt.num(state.leadPrice);
-  DOM.leadsCountInput.value = m.leadsCount;
+  // 3. Leads Inputs (only update if not currently typing in them)
+  if (document.activeElement !== DOM.leadPriceInput) {
+    DOM.leadPriceInput.value = fmt.num(state.leadPrice);
+  }
+  if (document.activeElement !== DOM.leadsCountInput) {
+    DOM.leadsCountInput.value = m.leadsCount;
+  }
 
   // 4. Economics
   DOM.dealCheckDisplay.textContent = fmt.rub(state.dealCheck);
-  DOM.dealCheckInput.value = fmt.num(state.dealCheck);
-  DOM.dealCheckSlider.value = state.dealCheck;
+  if (document.activeElement !== DOM.dealCheckInput) {
+    DOM.dealCheckInput.value = fmt.num(state.dealCheck);
+  }
+  syncSliderToCheck(state.dealCheck);
 
   DOM.quickCheckPills.forEach(pill => {
     const pCheck = parseInt(pill.dataset.check, 10);
@@ -349,7 +464,9 @@ function render() {
   });
 
   DOM.marginDisplay.textContent = `${state.marginPercent}%`;
-  DOM.marginInput.value = state.marginPercent;
+  if (document.activeElement !== DOM.marginInput) {
+    DOM.marginInput.value = state.marginPercent;
+  }
   DOM.marginSlider.value = state.marginPercent;
 
   DOM.quickMarginPills.forEach(pill => {
@@ -360,7 +477,9 @@ function render() {
   DOM.marginProfitPerDealNote.textContent = `Валовая прибыль с 1 сделки: ${fmt.rub(m.profitPerDeal)}`;
 
   DOM.conversionDisplay.textContent = `${state.conversionPercent}%`;
-  DOM.conversionInput.value = state.conversionPercent;
+  if (document.activeElement !== DOM.conversionInput) {
+    DOM.conversionInput.value = state.conversionPercent;
+  }
   DOM.conversionSlider.value = state.conversionPercent;
 
   DOM.quickConvPills.forEach(pill => {
@@ -374,10 +493,7 @@ function render() {
   DOM.ltvSlider.value = state.ltvRepeatDeals;
   DOM.ltvMultiplierDisplay.textContent = `+${state.ltvRepeatDeals} ${pluralDeals(state.ltvRepeatDeals)}`;
 
-  // ==================== 1. ПОМЕСЯЧНЫЙ ПЛАН (СУНУТО ВЫШЕ!) ====================
-  renderMonthlyTable(m);
-
-  // ==================== 2. ТОЧКА БЕЗУБЫТОЧНОСТИ ====================
+  // ==================== 1. ТОЧКА БЕЗУБЫТОЧНОСТИ ====================
   DOM.breakevenBigText.innerHTML = `
     Достаточно закрыть <span class="highlight-deals">всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}</span> из ${m.leadsCount} лидов
   `;
@@ -409,7 +525,7 @@ function render() {
     ${m.profitDealsCount > 0 ? `Оставшиеся <strong>${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие закрытые сделки приносят чистую прибыль.`}
   `;
 
-  // ==================== 3. ФИНАНСОВЫЙ ИТОГ ====================
+  // ==================== 2. ФИНАНСОВЫЙ ИТОГ (ЧИСТАЯ ПРИБЫЛЬ) ====================
   DOM.heroNetProfitVal.textContent = `${m.netProfit >= 0 ? '+' : ''}${fmt.rub(m.netProfit)}`;
   DOM.heroNetProfitVal.style.color = m.netProfit >= 0 ? 'var(--teal)' : '#DC2626';
   DOM.heroNetProfitSub.textContent = `При конверсии ${state.conversionPercent}% (${m.dealsCount} ${pluralDeals(m.dealsCount)})`;
@@ -420,6 +536,9 @@ function render() {
 
   DOM.heroBudgetVal.textContent = fmt.rub(m.totalBudget);
   DOM.heroBudgetBreakdownSub.textContent = `${fmt.rub(m.fixTotal)} фикс + ${m.leadsCount} лидов`;
+
+  // ==================== 3. ПОМЕСЯЧНЫЙ ПЛАН (ПОСЛЕ ЧИСТОЙ ПРИБЫЛИ) ====================
+  renderMonthlyTable(m);
 
   // ==================== 4. ВЫВОДЫ (ПО ИЛЬЯХОВУ) ====================
   renderConclusions(m);
@@ -619,17 +738,17 @@ function loadUrlParams() {
 
   if (params.has('lp')) {
     const lp = parseInt(params.get('lp'), 10);
-    if (lp >= 500 && lp <= 50000) state.leadPrice = lp;
+    if (lp >= 1 && lp <= 1000000) state.leadPrice = lp;
   }
 
   if (params.has('lc')) {
     const lc = parseInt(params.get('lc'), 10);
-    if (lc > 0 && lc <= 2000) state.leadsCount = lc;
+    if (lc > 0 && lc <= 50000) state.leadsCount = lc;
   }
 
   if (params.has('check')) {
     const check = parseInt(params.get('check'), 10);
-    if (check >= 10000 && check <= 100000000) state.dealCheck = check;
+    if (check >= 1 && check <= 1000000000) state.dealCheck = check;
   }
 
   if (params.has('margin')) {

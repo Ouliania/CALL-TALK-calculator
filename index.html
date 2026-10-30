@@ -142,7 +142,7 @@
                 <span class="input-suffix">руб.</span>
               </div>
             </div>
-            <input type="range" id="dealCheckSlider" min="100000" max="15000000" step="50000" value="1000000">
+            <input type="range" id="dealCheckSlider" min="10000" max="20000000" step="10000" value="1000000">
             <div class="quick-pills">
               <button class="pill-btn" data-check="300000">300 тыс.</button>
               <button class="pill-btn" data-check="500000">500 тыс.</button>
@@ -222,29 +222,7 @@
       <!-- RIGHT COLUMN: RESULTS & PLAN -->
       <div class="results-panel">
         
-        <!-- ==================== 1. ПОМЕСЯЧНЫЙ ПЛАН И ПЛАТЕЖИ (ВЫШЕ ВСЕХ!) ==================== -->
-        <div class="table-card">
-          <div class="table-title-row">
-            <span class="table-title">Помесячный план и платежи</span>
-            <span class="table-badge" id="tableBadgePeriod">Срок: 4 месяца</span>
-          </div>
-
-          <table class="funnel-table">
-            <thead>
-              <tr>
-                <th>Период</th>
-                <th>Лиды (план)</th>
-                <th>Сделки (прогноз)</th>
-                <th>Оплата Call-Talk</th>
-              </tr>
-            </thead>
-            <tbody id="funnelTableBody">
-              <!-- Rendered dynamically -->
-            </tbody>
-          </table>
-        </div>
-
-        <!-- ==================== 2. ПОКАЗАТЕЛИ ОКУПАЕМОСТИ И ТОЧКА БЕЗУБЫТОЧНОСТИ ==================== -->
+        <!-- ==================== 1. ПОКАЗАТЕЛИ ОКУПАЕМОСТИ И ТОЧКА БЕЗУБЫТОЧНОСТИ ==================== -->
         <div class="breakeven-card">
           
           <div class="be-title-wrap">
@@ -282,12 +260,12 @@
           </div>
 
           <div class="be-summary-text" id="breakevenExplanationText">
-            При среднем чеке 1 000 000 руб. и марже 12% валовая прибыль со сделки составляет 120 000 руб.. Все расходы на проект (374 400 руб.) окупаются с 4-й закрытой сделки. Оставшиеся сделки первого цикла приносят чистую прибыль.
+            При среднем чеке 1 000 000 руб. и марже 12% валовая прибыль со сделки составляет 120 000 руб. Все расходы на проект (374 400 руб.) окупаются с 4-й закрытой сделки. Оставшиеся сделки первого цикла приносят чистую прибыль.
           </div>
 
         </div>
 
-        <!-- ==================== 3. ФИНАНСОВЫЙ ИТОГ ==================== -->
+        <!-- ==================== 2. ФИНАНСОВЫЙ ИТОГ (ЧИСТАЯ ПРИБЫЛЬ) ==================== -->
         <div class="financial-summary-card">
           <div class="fin-stat-col">
             <span class="fin-stat-label">Чистая прибыль</span>
@@ -306,6 +284,28 @@
             <span class="fin-stat-val-huge dark" id="heroBudgetVal">374 400 руб.</span>
             <span class="fin-stat-sub" id="heroBudgetBreakdownSub">156 000 руб. фикс + 78 лидов</span>
           </div>
+        </div>
+
+        <!-- ==================== 3. ПОМЕСЯЧНЫЙ ПЛАН И ПЛАТЕЖИ (ПОСЛЕ ЧИСТОЙ ПРИБЫЛИ) ==================== -->
+        <div class="table-card">
+          <div class="table-title-row">
+            <span class="table-title">Помесячный план и платежи</span>
+            <span class="table-badge" id="tableBadgePeriod">Срок: 4 месяца</span>
+          </div>
+
+          <table class="funnel-table">
+            <thead>
+              <tr>
+                <th>Период</th>
+                <th>Лиды (план)</th>
+                <th>Сделки (прогноз)</th>
+                <th>Оплата Call-Talk</th>
+              </tr>
+            </thead>
+            <tbody id="funnelTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
         </div>
 
         <!-- ==================== 4. ВЫВОДЫ ПО ОКУПАЕМОСТИ ==================== -->
