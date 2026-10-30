@@ -727,29 +727,29 @@ input:checked + .slider::before {
 }
 
 /* ==========================================================================
-   NEW HERO SECTION: BREAK-EVEN & PAYBACK FOCUS (САМОЕ ГЛАВНОЕ НАВЕРХУ)
+   HERO SECTION: BREAK-EVEN & PAYBACK FOCUS (СВЕТЛЫЙ, ЧИСТЫЙ ДИЗАЙН)
    ========================================================================== */
 
-/* 1. Break-even Hero Card */
+/* 1. Break-even Hero Card (СВЕТЛЫЙ ДИЗАЙН ДЛЯ ВСТРЕЧ С КЛИЕНТАМИ) */
 .breakeven-hero-card {
-  background: linear-gradient(135deg, #101223 0%, #171836 100%);
-  color: #FFFFFF;
+  background: #FFFFFF;
+  color: var(--text-main);
   border-radius: var(--radius-xl);
   padding: 24px 26px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 12px 30px -5px rgba(20, 21, 42, 0.25);
-  border: 1.5px solid #2C2E5D;
+  box-shadow: 0 4px 20px rgba(91, 75, 216, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1.5px solid #E2E8F0;
 }
 
 .breakeven-hero-card::after {
   content: '';
   position: absolute;
-  top: -60px;
-  right: -60px;
-  width: 220px;
-  height: 220px;
-  background: radial-gradient(circle, rgba(14, 138, 106, 0.35) 0%, rgba(91, 75, 216, 0.25) 50%, transparent 70%);
+  top: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(14, 138, 106, 0.1) 0%, rgba(91, 75, 216, 0.06) 50%, transparent 70%);
   pointer-events: none;
 }
 
@@ -761,10 +761,10 @@ input:checked + .slider::before {
 }
 
 .breakeven-badge {
-  background: rgba(14, 138, 106, 0.25);
-  color: #34D399;
-  border: 1px solid rgba(52, 211, 153, 0.4);
-  font-size: 11px;
+  background: #E8F7F2;
+  color: var(--teal);
+  border: 1px solid var(--teal-border);
+  font-size: 11.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -775,33 +775,14 @@ input:checked + .slider::before {
   gap: 6px;
 }
 
-.scenario-pills {
-  display: flex;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 3px;
+.hero-tag-period {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  padding: 4px 10px;
   border-radius: var(--radius-full);
-  gap: 2px;
-}
-
-.scenario-pill {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: var(--radius-full);
-  color: #94A3B8;
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  transition: all 0.12s;
-}
-
-.scenario-pill:hover {
-  color: #FFFFFF;
-}
-
-.scenario-pill.active {
-  background: var(--primary);
-  color: #FFFFFF;
 }
 
 .breakeven-main-headline {
@@ -809,28 +790,29 @@ input:checked + .slider::before {
 }
 
 .breakeven-lead-intro {
-  font-size: 12.5px;
-  color: #94A3B8;
+  font-size: 12px;
+  color: #64748B;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .breakeven-big-statement {
   font-family: 'Manrope', sans-serif;
   font-size: 26px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: #14152A;
   margin-top: 4px;
   line-height: 1.25;
   letter-spacing: -0.5px;
 }
 
 .highlight-deals {
-  color: #34D399;
-  text-decoration: underline;
-  text-decoration-color: rgba(52, 211, 153, 0.5);
-  text-underline-offset: 4px;
+  color: #0E8A6A;
+  background: #E8F7F2;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-decoration: none;
 }
 
 /* Dual Highlights Grid */
@@ -838,8 +820,8 @@ input:checked + .slider::before {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
   border-radius: var(--radius-md);
   padding: 14px 18px;
   margin-bottom: 16px;
@@ -852,21 +834,21 @@ input:checked + .slider::before {
 
 .be-stat-label {
   font-size: 11.5px;
-  color: #94A3B8;
-  font-weight: 500;
+  color: #64748B;
+  font-weight: 600;
 }
 
 .be-stat-val {
   font-family: 'Manrope', sans-serif;
   font-size: 24px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: #14152A;
   margin-top: 2px;
   letter-spacing: -0.5px;
 }
 
 .be-stat-val.accent {
-  color: #38BDF8;
+  color: var(--primary);
 }
 
 .be-stat-sub {
@@ -885,24 +867,20 @@ input:checked + .slider::before {
   justify-content: space-between;
   font-size: 11.5px;
   font-weight: 600;
-  color: #E2E8F0;
+  color: #475569;
   margin-bottom: 6px;
-}
-
-.text-teal {
-  color: #34D399;
 }
 
 .be-progress-bar {
   height: 10px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.1);
+  background: #E2E8F0;
   overflow: hidden;
   display: flex;
 }
 
 .be-progress-fill-be {
-  background: #3B82F6;
+  background: var(--primary);
   height: 100%;
   transition: width 0.3s ease;
 }
@@ -914,13 +892,14 @@ input:checked + .slider::before {
 }
 
 .breakeven-explanation-text {
-  font-size: 12.5px;
-  color: #CBD5E1;
+  font-size: 13px;
+  color: #334155;
   line-height: 1.5;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 11px 14px;
+  background: #F0FDF4;
+  padding: 12px 16px;
   border-radius: 8px;
-  border-left: 3px solid #34D399;
+  border: 1px solid #D1FAE5;
+  border-left: 4px solid #10B981;
 }
 
 /* 2. Financial Summary Card */
@@ -973,63 +952,138 @@ input:checked + .slider::before {
   color: var(--text-secondary);
 }
 
-/* 3. Speech Script Card */
-.speech-script-card {
+/* 3. Conclusions Card (ВЫВОДЫ ДЛЯ КЛИЕНТА) */
+.conclusions-card {
   background: #FAF8FF;
   border: 1.5px solid #E0DBFB;
   border-radius: var(--radius-lg);
-  padding: 14px 16px;
+  padding: 16px 20px;
   box-shadow: 0 2px 6px rgba(91, 75, 216, 0.05);
 }
 
-.speech-script-header {
+.conclusions-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
-.speech-script-title {
-  font-size: 12.5px;
-  font-weight: 700;
+.conclusions-title {
+  font-size: 14px;
+  font-weight: 800;
   color: var(--primary);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.btn-outline-white {
+.btn-outline-primary {
   background: #FFFFFF;
   border: 1px solid var(--primary-border);
   color: var(--primary);
   border-radius: var(--radius-sm);
-  padding: 4px 8px;
-  font-size: 11.5px;
+  padding: 5px 10px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   transition: all 0.12s ease;
 }
 
-.btn-outline-white:hover {
+.btn-outline-primary:hover {
   background: var(--primary-light);
   border-color: var(--primary);
 }
 
-.speech-script-quote {
+.conclusions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.conclusion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   font-size: 13px;
   color: #1E1B4B;
   line-height: 1.48;
   background: #FFFFFF;
   padding: 10px 14px;
   border-radius: 8px;
+  border: 1px solid #ECE7FD;
   border-left: 3px solid var(--primary);
-  border-top: 1px solid var(--border-light);
-  border-right: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
-  font-style: italic;
+}
+
+.conclusion-item strong {
+  color: #0F172A;
+}
+
+.conclusion-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  color: var(--primary);
+}
+
+/* Mailboxes Selector (ЯНДЕКС 360) */
+.mailboxes-selector-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.mailbox-btn {
+  background: #FFFFFF;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.mailbox-btn:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-subtle);
+}
+
+.mailbox-btn.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.mailbox-num {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--text-main);
+}
+
+.mailbox-btn.active .mailbox-num {
+  color: var(--primary);
+}
+
+.mailbox-sub {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Pill Lead Price */
+.pill-lead-price.active {
+  background: var(--primary) !important;
+  color: #FFFFFF !important;
+  border-color: var(--primary) !important;
 }
 
 /* 4. Secondary Divider */
