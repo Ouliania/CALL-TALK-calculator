@@ -1,17 +1,20 @@
 /**
- * CALL-TALK ROI CALCULATOR
+ * CALL-TALK ROI & PAYBACK CALCULATOR
  * Core Application Logic & State Management
  * 
  * Rules strictly followed:
  * - NO ruble graphic sign: always "руб." or "руб./мес".
- * - Only use "база контактов" or "база в обработке".
+ * - Only use "база контактов" or "база в обработке" (NEVER "база ЛПР").
  * - No daily letter limits.
- * - SQL meetings = x3 MQL price.
+ * - Standard margin: 10–12% (maximum 15%) to avoid overstating payback.
+ * - No auto-guessing / auto-suggestions: user numbers entered manually.
+ * - Payback & break-even front and center.
  */
 
 // Formatters
 const fmt = {
   num: (val) => new Intl.NumberFormat('ru-RU').format(Math.round(val)),
+  numFloat: (val, dec = 1) => new Intl.NumberFormat('ru-RU', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(val),
   rub: (val) => `${fmt.num(val)} руб.`,
   rubPerMonth: (val) => `${fmt.num(val)} руб./мес`,
   pct: (val) => `${val > 0 ? '+' : ''}${Math.round(val)}%`,
@@ -23,17 +26,18 @@ const fmt = {
 
 // Application State
 const state = {
-  tariffMonths: 4,       // 4 or 2
+  tariffMonths: 4,         // 4 or 2
   tariffFixPerMonth: 39000,
-  leadType: 'mql',       // 'mql' or 'sql'
-  nicheLevel: 2,         // 1, 2, or 3
-  customMqlPrice: null,  // if manual price set
-  dealCheck: 1200000,    // average deal in rubles
-  marginPercent: 20,     // net margin %
-  conversionPercent: 15, // conversion from lead to closed deal %
-  ltvEnabled: false,     // repeat purchases toggle
-  ltvRepeatDeals: 2,     // repeat purchases count
-  scenario: 'base'       // 'pessimistic', 'base', 'optimistic'
+  leadType: 'mql',         // 'mql' (interest) or 'sql' (meeting x3)
+  nicheLevel: 2,           // 1, 2, or 3
+  customLeadPrice: null,   // if manual price per lead is set
+  customLeadsCount: null,  // if manual leads count is set
+  dealCheck: 1000000,      // average deal in rubles
+  marginPercent: 12,       // net margin % (strictly 10-12%, max 15%)
+  conversionPercent: 15,   // conversion from lead to deal %
+  ltvEnabled: false,       // repeat purchases toggle
+  ltvRepeatDeals: 2,       // repeat purchases count
+  scenario: 'base'         // 'pessimistic', 'base', 'optimistic'
 };
 
 // Benchmarks per tariff
@@ -46,10 +50,10 @@ const TARIFF_BENCHMARKS = {
     leadsMax: 94,
     leadsAvg: 78,
     monthly: [
-      { month: 1, name: '1-й месяц (прогрев + старт)', contacts: 600, emails: 1500, leadsMin: 9, leadsMax: 14, leadsAvg: 11 },
-      { month: 2, name: '2-й месяц (масштабирование)', contacts: 1500, emails: 3750, leadsMin: 18, leadsMax: 27, leadsAvg: 22 },
-      { month: 3, name: '3-й месяц (системный поток)', contacts: 1500, emails: 3750, leadsMin: 18, leadsMax: 27, leadsAvg: 22 },
-      { month: 4, name: '4-й месяц (максимальный темп)', contacts: 1500, emails: 3750, leadsMin: 18, leadsMax: 27, leadsAvg: 23 }
+      { month: 1, name: '1-й месяц (прогрев + запуск)', contacts: 600, emails: 1800, leadsMin: 9, leadsMax: 14, leadsAvg: 11 },
+      { month: 2, name: '2-й месяц (масштабирование)', contacts: 1500, emails: 4500, leadsMin: 18, leadsMax: 27, leadsAvg: 22 },
+      { month: 3, name: '3-й месяц (основные отрасли)', contacts: 1500, emails: 4500, leadsMin: 18, leadsMax: 27, leadsAvg: 22 },
+      { month: 4, name: '4-й месяц (дожим и новые сегменты)', contacts: 1500, emails: 4500, leadsMin: 18, leadsMax: 27, leadsAvg: 23 }
     ]
   },
   2: {
@@ -60,8 +64,8 @@ const TARIFF_BENCHMARKS = {
     leadsMax: 41,
     leadsAvg: 34,
     monthly: [
-      { month: 1, name: '1-й месяц (прогрев + старт)', contacts: 600, emails: 1500, leadsMin: 9, leadsMax: 14, leadsAvg: 11 },
-      { month: 2, name: '2-й месяц (масштабирование)', contacts: 1500, emails: 3750, leadsMin: 18, leadsMax: 27, leadsAvg: 23 }
+      { month: 1, name: '1-й месяц (прогрев + запуск)', contacts: 600, emails: 1800, leadsMin: 9, leadsMax: 14, leadsAvg: 11 },
+      { month: 2, name: '2-й месяц (масштабирование)', contacts: 1500, emails: 4500, leadsMin: 18, leadsMax: 27, leadsAvg: 23 }
     ]
   }
 };
@@ -73,7 +77,7 @@ const LEVEL_MQL_PRICES = {
   3: 4800
 };
 
-// Niche Presets
+// Niche Presets (All margins strictly 10–12%, max 15%)
 const PRESETS = {
   metals: {
     name: 'Металлоконструкции',
@@ -81,7 +85,7 @@ const PRESETS = {
     leadType: 'mql',
     nicheLevel: 2,
     dealCheck: 2500000,
-    marginPercent: 18,
+    marginPercent: 12,
     conversionPercent: 15,
     ltvEnabled: false,
     ltvRepeatDeals: 2
@@ -92,41 +96,41 @@ const PRESETS = {
     leadType: 'mql',
     nicheLevel: 2,
     dealCheck: 1800000,
-    marginPercent: 40,
+    marginPercent: 15,
     conversionPercent: 12,
     ltvEnabled: false,
     ltvRepeatDeals: 2
   },
   packaging: {
-    name: 'Опт и упаковка',
+    name: 'Опт и поставки',
     tariffMonths: 4,
     leadType: 'mql',
     nicheLevel: 1,
-    dealCheck: 450000,
-    marginPercent: 25,
-    conversionPercent: 18,
+    dealCheck: 600000,
+    marginPercent: 12,
+    conversionPercent: 15,
     ltvEnabled: true,
     ltvRepeatDeals: 3
   },
   agro: {
     name: 'Спецтехника и станки',
     tariffMonths: 4,
-    leadType: 'sql', // SQL meetings for high check!
+    leadType: 'sql', // Созвоны под ТЗ для крупного чека
     nicheLevel: 3,
-    dealCheck: 6500000,
-    marginPercent: 15,
+    dealCheck: 5000000,
+    marginPercent: 10,
     conversionPercent: 25,
     ltvEnabled: false,
     ltvRepeatDeals: 1
   },
   consulting: {
-    name: 'Консалтинг и аудит',
+    name: 'Сервис и аудит',
     tariffMonths: 2,
     leadType: 'mql',
     nicheLevel: 2,
-    dealCheck: 900000,
-    marginPercent: 50,
-    conversionPercent: 20,
+    dealCheck: 800000,
+    marginPercent: 15,
+    conversionPercent: 15,
     ltvEnabled: false,
     ltvRepeatDeals: 2
   }
@@ -146,12 +150,13 @@ const DOM = {
   mqlPriceText: document.getElementById('mqlPriceText'),
   sqlPriceText: document.getElementById('sqlPriceText'),
 
-  // Niche level cards
+  // Niche level cards & custom lead price
   levelCards: document.querySelectorAll('.level-card'),
   labelCurrentNicheLevel: document.getElementById('labelCurrentNicheLevel'),
   lvl1PriceVal: document.getElementById('lvl1PriceVal'),
   lvl2PriceVal: document.getElementById('lvl2PriceVal'),
   lvl3PriceVal: document.getElementById('lvl3PriceVal'),
+  customLeadPriceInput: document.getElementById('customLeadPriceInput'),
 
   // Economics inputs & sliders
   dealCheckInput: document.getElementById('dealCheckInput'),
@@ -162,11 +167,14 @@ const DOM = {
   marginInput: document.getElementById('marginInput'),
   marginSlider: document.getElementById('marginSlider'),
   marginDisplay: document.getElementById('marginDisplay'),
+  quickMarginPills: document.querySelectorAll('.pill-margin'),
 
   conversionInput: document.getElementById('conversionInput'),
   conversionSlider: document.getElementById('conversionSlider'),
   conversionDisplay: document.getElementById('conversionDisplay'),
-  convHintText: document.getElementById('convHintText'),
+  quickConvPills: document.querySelectorAll('.pill-conv'),
+
+  customLeadsInput: document.getElementById('customLeadsInput'),
 
   ltvToggle: document.getElementById('ltvToggle'),
   ltvSubpanel: document.getElementById('ltvSubpanel'),
@@ -176,23 +184,36 @@ const DOM = {
   // Scenarios
   scenarioPills: document.querySelectorAll('.scenario-pill'),
 
-  // Hero Stats
-  heroRoiVal: document.getElementById('heroRoiVal'),
+  // Payback Hero Elements (TOP)
+  breakevenBigText: document.getElementById('breakevenBigText'),
+  beTotalLeads: document.getElementById('beTotalLeads'),
+  beDealsVal: document.getElementById('beDealsVal'),
+  beProfitPerDealSub: document.getElementById('beProfitPerDealSub'),
+  beConversionVal: document.getElementById('beConversionVal'),
+  beLabelBreakEven: document.getElementById('beLabelBreakEven'),
+  beLabelProfitDeals: document.getElementById('beLabelProfitDeals'),
+  beProgressFillBe: document.getElementById('beProgressFillBe'),
+  beProgressFillProfit: document.getElementById('beProgressFillProfit'),
+  breakevenExplanationText: document.getElementById('breakevenExplanationText'),
+
+  // Financial Hero Elements
   heroNetProfitVal: document.getElementById('heroNetProfitVal'),
-  heroRevenueVal: document.getElementById('heroRevenueVal'),
+  heroRoiVal: document.getElementById('heroRoiVal'),
+  heroRomiMultipleSub: document.getElementById('heroRomiMultipleSub'),
   heroBudgetVal: document.getElementById('heroBudgetVal'),
-  heroCostShareVal: document.getElementById('heroCostShareVal'),
+  heroBudgetBreakdownSub: document.getElementById('heroBudgetBreakdownSub'),
 
-  // Break-even
-  breakevenDescText: document.getElementById('breakevenDescText'),
+  // Speech Script
+  speechScriptQuote: document.getElementById('speechScriptQuote'),
+  btnCopyScript: document.getElementById('btnCopyScript'),
 
-  // Funnel & Stats Boxes
-  statLeadsVal: document.getElementById('statLeadsVal'),
-  statLeadsRange: document.getElementById('statLeadsRange'),
+  // Secondary Metrics Boxes (BELOW)
+  statRevenueVal: document.getElementById('statRevenueVal'),
+  statCostShareVal: document.getElementById('statCostShareVal'),
   statDealsVal: document.getElementById('statDealsVal'),
   statDealsProfit: document.getElementById('statDealsProfit'),
-  statBudgetVal: document.getElementById('statBudgetVal'),
-  statBudgetBreakdown: document.getElementById('statBudgetBreakdown'),
+  statLeadsVal: document.getElementById('statLeadsVal'),
+  statLeadsRange: document.getElementById('statLeadsRange'),
   statCacVal: document.getElementById('statCacVal'),
   statCacCompare: document.getElementById('statCacCompare'),
 
@@ -230,11 +251,10 @@ function bindEvents() {
     render();
   });
 
-  // Lead format selection (MQL vs SQL x3)
+  // Lead format selection (Interest vs Meeting x3)
   DOM.leadTypeMQL.addEventListener('click', () => {
     if (state.leadType !== 'mql') {
       state.leadType = 'mql';
-      // If conversion was at SQL default (30%), set to MQL default (15%)
       if (state.conversionPercent >= 25) {
         state.conversionPercent = 15;
       }
@@ -245,9 +265,8 @@ function bindEvents() {
   DOM.leadTypeSQL.addEventListener('click', () => {
     if (state.leadType !== 'sql') {
       state.leadType = 'sql';
-      // If conversion was at MQL default (15%), suggest SQL default (30%)
-      if (state.conversionPercent <= 18) {
-        state.conversionPercent = 30;
+      if (state.conversionPercent <= 15) {
+        state.conversionPercent = 25;
       }
       render();
     }
@@ -257,42 +276,61 @@ function bindEvents() {
   DOM.levelCards.forEach(card => {
     card.addEventListener('click', () => {
       state.nicheLevel = parseInt(card.dataset.level, 10);
+      state.customLeadPrice = null;
+      if (DOM.customLeadPriceInput) DOM.customLeadPriceInput.value = '';
       render();
     });
   });
 
-  // Average Check Input & Slider
+  // Custom Lead Price Input
+  if (DOM.customLeadPriceInput) {
+    DOM.customLeadPriceInput.addEventListener('input', (e) => {
+      const val = fmt.cleanNum(e.target.value);
+      if (val > 0) {
+        state.customLeadPrice = val;
+      } else {
+        state.customLeadPrice = null;
+      }
+      render();
+    });
+  }
+
+  // Average Deal Check Input & Slider (MANUAL INPUT ONLY, NO GUESSING)
   DOM.dealCheckSlider.addEventListener('input', (e) => {
     state.dealCheck = parseInt(e.target.value, 10);
-    suggestLevelByCheck(state.dealCheck);
     render();
   });
 
   DOM.dealCheckInput.addEventListener('change', (e) => {
     const val = fmt.cleanNum(e.target.value);
-    state.dealCheck = Math.max(50000, Math.min(val, 50000000));
-    suggestLevelByCheck(state.dealCheck);
+    state.dealCheck = Math.max(10000, Math.min(val, 100000000));
     render();
   });
 
   DOM.quickCheckPills.forEach(pill => {
     pill.addEventListener('click', () => {
       state.dealCheck = parseInt(pill.dataset.check, 10);
-      suggestLevelByCheck(state.dealCheck);
       render();
     });
   });
 
-  // Margin %
+  // Margin % (10–12%, MAX 15%)
   DOM.marginSlider.addEventListener('input', (e) => {
     state.marginPercent = parseInt(e.target.value, 10);
     render();
   });
 
   DOM.marginInput.addEventListener('change', (e) => {
-    const val = parseInt(e.target.value, 10) || 20;
-    state.marginPercent = Math.max(5, Math.min(val, 95));
+    const val = parseInt(e.target.value, 10) || 12;
+    state.marginPercent = Math.max(1, Math.min(val, 95));
     render();
+  });
+
+  DOM.quickMarginPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      state.marginPercent = parseInt(pill.dataset.margin, 10);
+      render();
+    });
   });
 
   // Conversion %
@@ -306,6 +344,26 @@ function bindEvents() {
     state.conversionPercent = Math.max(1, Math.min(val, 95));
     render();
   });
+
+  DOM.quickConvPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      state.conversionPercent = parseInt(pill.dataset.conv, 10);
+      render();
+    });
+  });
+
+  // Custom Leads Count
+  if (DOM.customLeadsInput) {
+    DOM.customLeadsInput.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10);
+      if (val > 0) {
+        state.customLeadsCount = val;
+      } else {
+        state.customLeadsCount = null;
+      }
+      render();
+    });
+  }
 
   // LTV Toggle & Slider
   DOM.ltvToggle.addEventListener('change', (e) => {
@@ -336,12 +394,17 @@ function bindEvents() {
         state.tariffFixPerMonth = preset.tariffMonths === 4 ? 39000 : 56000;
         state.leadType = preset.leadType;
         state.nicheLevel = preset.nicheLevel;
+        state.customLeadPrice = null;
+        state.customLeadsCount = null;
         state.dealCheck = preset.dealCheck;
         state.marginPercent = preset.marginPercent;
         state.conversionPercent = preset.conversionPercent;
         state.ltvEnabled = preset.ltvEnabled;
         state.ltvRepeatDeals = preset.ltvRepeatDeals;
         
+        if (DOM.customLeadPriceInput) DOM.customLeadPriceInput.value = '';
+        if (DOM.customLeadsInput) DOM.customLeadsInput.value = '';
+
         DOM.presetChips.forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
 
@@ -355,82 +418,98 @@ function bindEvents() {
   DOM.btnCopyOffer.addEventListener('click', copyClientSummary);
   DOM.btnShareLink.addEventListener('click', copyShareableLink);
   DOM.btnPrint.addEventListener('click', () => window.print());
+  if (DOM.btnCopyScript) DOM.btnCopyScript.addEventListener('click', copySpeechScript);
 }
 
-// Auto suggest niche level based on deal size if user hasn't explicitly chosen
-function suggestLevelByCheck(check) {
-  if (check >= 3000000 && state.nicheLevel < 3) {
-    state.nicheLevel = 3;
-  } else if (check >= 600000 && check < 3000000 && state.nicheLevel === 1) {
-    state.nicheLevel = 2;
-  }
-}
-
-// Calculate All Metrics
+// Calculate All Metrics with Margin 10-12% (max 15%)
 function calculateMetrics() {
   const tariffData = TARIFF_BENCHMARKS[state.tariffMonths];
   const isSql = state.leadType === 'sql';
   const multiplier = isSql ? 3 : 1;
-  const currentLeadPrice = LEVEL_MQL_PRICES[state.nicheLevel] * multiplier;
 
-  // Leads count based on scenario
-  let leadsCount = tariffData.leadsAvg;
+  // Base price per lead
+  const basePrice = (state.customLeadPrice && state.customLeadPrice > 0)
+    ? state.customLeadPrice
+    : LEVEL_MQL_PRICES[state.nicheLevel];
+  const currentLeadPrice = basePrice * multiplier;
+
+  // Leads count: custom or scenario-based
+  let leadsCount = (state.customLeadsCount && state.customLeadsCount > 0)
+    ? state.customLeadsCount
+    : tariffData.leadsAvg;
+    
   let effectiveConv = state.conversionPercent;
 
-  if (state.scenario === 'pessimistic') {
-    leadsCount = tariffData.leadsMin;
-    effectiveConv = Math.max(1, Math.round(state.conversionPercent * 0.8));
-  } else if (state.scenario === 'optimistic') {
-    leadsCount = tariffData.leadsMax;
-    effectiveConv = Math.round(state.conversionPercent * 1.15);
+  if (!state.customLeadsCount) {
+    if (state.scenario === 'pessimistic') {
+      leadsCount = tariffData.leadsMin;
+      effectiveConv = Math.max(1, Math.round(state.conversionPercent * 0.8));
+    } else if (state.scenario === 'optimistic') {
+      leadsCount = tariffData.leadsMax;
+      effectiveConv = Math.round(state.conversionPercent * 1.15);
+    }
   }
 
-  // Deals
-  const dealsCount = Math.max(1, Math.round(leadsCount * (effectiveConv / 100)));
-  
   // Repeat deals multiplier
   const ltvFactor = state.ltvEnabled ? (1 + state.ltvRepeatDeals) : 1;
 
-  // Economics
-  const grossRevenue = dealsCount * state.dealCheck * ltvFactor;
-  const grossProfit = grossRevenue * (state.marginPercent / 100);
+  // Closed deals forecast
+  const exactDeals = leadsCount * (effectiveConv / 100);
+  const dealsCount = Math.max(1, Math.round(exactDeals));
+
+  // Gross Margin per Deal (strictly with margin 10-12-15%)
+  const marginFrac = state.marginPercent / 100;
+  const profitPerDeal = state.dealCheck * marginFrac * ltvFactor;
 
   // Call-Talk Costs
   const fixTotal = state.tariffMonths * state.tariffFixPerMonth;
   const variableTotal = leadsCount * currentLeadPrice;
   const totalBudget = fixTotal + variableTotal;
 
-  // Client Net Profit & ROI
-  const netProfit = grossProfit - totalBudget;
-  const roi = Math.round((netProfit / totalBudget) * 100);
-  const costShare = ((totalBudget / grossRevenue) * 100).toFixed(1);
-  const cac = Math.round(totalBudget / dealsCount);
+  // Break-even (Точка безубыточности договора)
+  // How many deals needed to cover the total budget?
+  const exactDealsToBreakEven = profitPerDeal > 0 ? (totalBudget / profitPerDeal) : 0;
+  const dealsToBreakEven = Math.max(1, Math.ceil(exactDealsToBreakEven));
+  const breakEvenConversion = leadsCount > 0 ? ((exactDealsToBreakEven / leadsCount) * 100).toFixed(1) : '0.0';
 
-  // Margin from single deal
-  const profitPerDeal = state.dealCheck * (state.marginPercent / 100) * ltvFactor;
-  const dealsToBreakEven = Math.max(1, Math.ceil(totalBudget / profitPerDeal));
-  const breakEvenConversion = ((dealsToBreakEven / leadsCount) * 100).toFixed(1);
+  // Profitable deals beyond break-even
+  const profitDealsCount = Math.max(0, dealsCount - dealsToBreakEven);
+
+  // Financial totals
+  const grossRevenue = dealsCount * state.dealCheck * ltvFactor;
+  const grossProfit = dealsCount * profitPerDeal; // total margin generated
+  const netProfit = grossProfit - totalBudget;
+  const roi = totalBudget > 0 ? Math.round((netProfit / totalBudget) * 100) : 0;
+  const romiMultiple = totalBudget > 0 ? (grossProfit / totalBudget).toFixed(1) : '0.0';
+  const costShare = grossRevenue > 0 ? ((totalBudget / grossRevenue) * 100).toFixed(1) : '0.0';
+  const cac = dealsCount > 0 ? Math.round(totalBudget / dealsCount) : totalBudget;
 
   return {
     tariffData,
     isSql,
+    multiplier,
+    basePrice,
     currentLeadPrice,
     leadsCount,
     dealsCount,
+    exactDeals,
     effectiveConv,
     ltvFactor,
-    grossRevenue,
-    grossProfit,
+    profitPerDeal,
     fixTotal,
     variableTotal,
     totalBudget,
+    exactDealsToBreakEven,
+    dealsToBreakEven,
+    breakEvenConversion,
+    profitDealsCount,
+    grossRevenue,
+    grossProfit,
     netProfit,
     roi,
+    romiMultiple,
     costShare,
-    cac,
-    profitPerDeal,
-    dealsToBreakEven,
-    breakEvenConversion
+    cac
   };
 }
 
@@ -444,13 +523,13 @@ function render() {
   DOM.labelPeriodSummary.textContent = `${state.tariffMonths} месяца · ${fmt.num(m.tariffData.totalBaseContacts)} контактов`;
   DOM.tableBadgePeriod.textContent = `Период: ${state.tariffMonths} мес (${fmt.num(m.tariffData.totalBaseContacts)} контактов)`;
 
-  // 2. Lead Type (MQL vs SQL x3)
+  // 2. Lead Format
   DOM.leadTypeMQL.classList.toggle('active', !m.isSql);
   DOM.leadTypeSQL.classList.toggle('active', m.isSql);
-  DOM.labelLeadFormatNote.textContent = m.isSql ? 'Премиум-модель (x3)' : 'Базовая модель';
+  DOM.labelLeadFormatNote.textContent = m.isSql ? 'Премиум-созвоны (x3)' : 'Базовая ставка';
 
   // Dynamic price labels on cards
-  const curBasePrice = LEVEL_MQL_PRICES[state.nicheLevel];
+  const curBasePrice = state.customLeadPrice || LEVEL_MQL_PRICES[state.nicheLevel];
   DOM.mqlPriceText.textContent = `${fmt.num(curBasePrice)} руб. / лид`;
   DOM.sqlPriceText.textContent = `${fmt.num(curBasePrice * 3)} руб. / лид`;
 
@@ -462,9 +541,11 @@ function render() {
 
   DOM.levelCards.forEach(card => {
     const lvl = parseInt(card.dataset.level, 10);
-    card.classList.toggle('active', lvl === state.nicheLevel);
+    card.classList.toggle('active', lvl === state.nicheLevel && !state.customLeadPrice);
   });
-  DOM.labelCurrentNicheLevel.textContent = `Уровень ${state.nicheLevel}`;
+  DOM.labelCurrentNicheLevel.textContent = state.customLeadPrice
+    ? `Своя цена (${fmt.rub(m.currentLeadPrice)})`
+    : `Уровень ${state.nicheLevel}`;
 
   // 4. Client Economics Inputs
   DOM.dealCheckDisplay.textContent = fmt.rub(state.dealCheck);
@@ -480,13 +561,19 @@ function render() {
   DOM.marginInput.value = state.marginPercent;
   DOM.marginSlider.value = state.marginPercent;
 
+  DOM.quickMarginPills.forEach(pill => {
+    const pMargin = parseInt(pill.dataset.margin, 10);
+    pill.classList.toggle('active', pMargin === state.marginPercent);
+  });
+
   DOM.conversionDisplay.textContent = `${state.conversionPercent}%`;
   DOM.conversionInput.value = state.conversionPercent;
   DOM.conversionSlider.value = state.conversionPercent;
 
-  DOM.convHintText.textContent = m.isSql
-    ? 'Для встреч (SQL) средний ориентир 25–40% (ЛПР уже согласился на предметный диалог/ТЗ).'
-    : 'Для MQL средний ориентир 10–20% (ответ с подтвержденным интересом).';
+  DOM.quickConvPills.forEach(pill => {
+    const pConv = parseInt(pill.dataset.conv, 10);
+    pill.classList.toggle('active', pConv === state.conversionPercent);
+  });
 
   // LTV Toggle & Display
   DOM.ltvToggle.checked = state.ltvEnabled;
@@ -499,39 +586,72 @@ function render() {
     pill.classList.toggle('active', pill.dataset.scenario === state.scenario);
   });
 
-  // 5. Hero Stats
-  DOM.heroRoiVal.textContent = fmt.pct(m.roi);
-  DOM.heroRoiVal.style.color = m.roi >= 0 ? '#2DD4BF' : '#F87171';
-  DOM.heroNetProfitVal.textContent = fmt.rub(m.netProfit);
-  DOM.heroRevenueVal.textContent = fmt.rub(m.grossRevenue);
-  DOM.heroBudgetVal.textContent = fmt.rub(m.totalBudget);
-  DOM.heroCostShareVal.textContent = `~${m.costShare}%`;
+  // ==================== 5. TOP PAYBACK HERO (ТОЧКА БЕЗУБЫТОЧНОСТИ) ====================
+  DOM.beTotalLeads.textContent = m.leadsCount;
+  DOM.breakevenBigText.innerHTML = `
+    Достаточно закрыть <span class="highlight-deals">всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}</span> из ${m.leadsCount} лидов
+  `;
+  DOM.beDealsVal.textContent = `${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}`;
+  DOM.beProfitPerDealSub.textContent = `Маржа со сделки: ${fmt.rub(m.profitPerDeal)} (${state.marginPercent}%)`;
+  DOM.beConversionVal.textContent = `всего ${m.breakEvenConversion}%`;
 
-  // 6. Break-Even Description
-  DOM.breakevenDescText.innerHTML = `
-    Клиенту достаточно закрыть <strong>всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}</strong> из ${m.leadsCount} лидов 
-    (конверсия <strong>${m.breakEvenConversion}%</strong>), чтобы полностью окупить весь бюджет проекта 
-    в размере ${fmt.rub(m.totalBudget)}. 
-    ${state.ltvEnabled ? 'Повторные заказы приносят 100% чистую прибыль без затрат на маркетинг.' : 'Каждая последующая сделка генерирует чистую прибыль.'}
+  // Progress Bar: Break-even vs Profit Deals
+  const beRatio = Math.min(100, Math.max(10, Math.round((m.dealsToBreakEven / Math.max(m.dealsCount, m.dealsToBreakEven)) * 100)));
+  const profitRatio = Math.max(0, 100 - beRatio);
+  DOM.beProgressFillBe.style.width = `${beRatio}%`;
+  DOM.beProgressFillProfit.style.width = `${profitRatio}%`;
+
+  DOM.beLabelBreakEven.textContent = `🎯 ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} покрывают весь бюджет (${fmt.rub(m.totalBudget)})`;
+  if (m.profitDealsCount > 0) {
+    DOM.beLabelProfitDeals.textContent = `💰 Еще ${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)} — чистая прибыль`;
+    DOM.beLabelProfitDeals.style.display = 'inline';
+  } else {
+    DOM.beLabelProfitDeals.textContent = ``;
+    DOM.beLabelProfitDeals.style.display = 'none';
+  }
+
+  DOM.breakevenExplanationText.innerHTML = `
+    При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> и чистой марже <strong>${state.marginPercent}%</strong> 
+    валовая прибыль с одной сделки составляет <strong>${fmt.rub(m.profitPerDeal)}</strong>. 
+    Весь ${state.tariffMonths}-месячный бюджет проекта (<strong>${fmt.rub(m.totalBudget)}</strong>) окупается уже с 
+    <strong>${m.dealsToBreakEven}-й закрытой сделки</strong>. 
+    ${m.profitDealsCount > 0 ? `Оставшиеся <strong>${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)}</strong> первого цикла приносят чистую прибыль сверх расходов на запуск.` : `Все последующие сделки и повторные заказы приносят 100% чистую прибыль.`}
   `;
 
-  // 7. Funnel & Output Stat Boxes
-  DOM.statLeadsVal.textContent = `${m.leadsCount} лидов`;
-  DOM.statLeadsRange.textContent = `Диапазон: ${m.tariffData.leadsMin}–${m.tariffData.leadsMax} лидов`;
+  // ==================== 6. FINANCIAL TOTALS ====================
+  DOM.heroNetProfitVal.textContent = `${m.netProfit >= 0 ? '+' : ''}${fmt.rub(m.netProfit)}`;
+  DOM.heroNetProfitVal.style.color = m.netProfit >= 0 ? 'var(--teal)' : '#DC2626';
+
+  DOM.heroRoiVal.textContent = fmt.pct(m.roi);
+  DOM.heroRoiVal.style.color = m.roi >= 0 ? 'var(--primary)' : '#DC2626';
+  DOM.heroRomiMultipleSub.textContent = `Возврат бюджета в ${m.romiMultiple} раза`;
+
+  DOM.heroBudgetVal.textContent = fmt.rub(m.totalBudget);
+  DOM.heroBudgetBreakdownSub.textContent = `${fmt.rub(m.fixTotal)} фикс + ${m.leadsCount} лидов`;
+
+  // ==================== 7. SPEECH SCRIPT QUOTE ====================
+  const quoteText = `«За ${state.tariffMonths} месяца мы передадим вам ${m.leadsCount} лидов с подтвержденным интересом. Ваши суммарные инвестиции составят ${fmt.rub(m.totalBudget)}. При среднем чеке ${fmt.rub(state.dealCheck)} и чистой марже ${state.marginPercent}% валовая прибыль с одной сделки составляет ${fmt.rub(m.profitPerDeal)}. Поэтому для полной окупаемости договора вам достаточно закрыть всего ${m.dealsToBreakEven} из ${m.leadsCount} лидов (конверсия всего ${m.breakEvenConversion}%). Всё, что вы закроете сверх этого (еще ${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)} на ${fmt.rub(m.profitDealsCount * m.profitPerDeal)} чистой прибыли), остаётся вашей чистой прибылью сверх затрат на запуск.»`;
+  DOM.speechScriptQuote.textContent = quoteText;
+
+  // ==================== 8. SECONDARY METRICS (BELOW) ====================
+  DOM.statRevenueVal.textContent = fmt.rub(m.grossRevenue);
+  DOM.statCostShareVal.textContent = `Доля затрат в обороте: ~${m.costShare}%`;
 
   DOM.statDealsVal.textContent = `${m.dealsCount} ${pluralDeals(m.dealsCount)}`;
   DOM.statDealsProfit.textContent = `Маржа со сделки: ${fmt.rub(m.profitPerDeal)}`;
 
-  DOM.statBudgetVal.textContent = fmt.rub(m.totalBudget);
-  DOM.statBudgetBreakdown.textContent = `Фикс ${fmt.rub(m.fixTotal)} + Лиды ${fmt.rub(m.variableTotal)}`;
+  DOM.statLeadsVal.textContent = `${m.leadsCount} лидов`;
+  DOM.statLeadsRange.textContent = state.customLeadsCount
+    ? `Ручной ввод: ${state.customLeadsCount} лидов`
+    : `Диапазон тарифа: ${m.tariffData.leadsMin}–${m.tariffData.leadsMax} лидов`;
 
   DOM.statCacVal.textContent = fmt.rub(m.cac);
   DOM.statCacCompare.textContent = `Приносит выручки: ${fmt.rub(state.dealCheck * m.ltvFactor)}`;
 
-  // 8. Render Monthly Table
+  // ==================== 9. MONTHLY TIMELINE TABLE ====================
   renderMonthlyTable(m);
 
-  // Sync state to URL without page reload
+  // Sync state to URL
   syncStateToUrl();
 }
 
@@ -540,7 +660,7 @@ function pluralDeals(n) {
   const mod10 = n % 10;
   const mod100 = n % 100;
   if (mod100 >= 11 && mod100 <= 19) return 'сделок';
-  if (mod10 === 1) return 'сделку';
+  if (mod10 === 1) return 'сделка';
   if (mod10 >= 2 && mod10 <= 4) return 'сделки';
   return 'сделок';
 }
@@ -557,12 +677,9 @@ function renderMonthlyTable(m) {
   let accumCost = 0;
 
   months.forEach((row, idx) => {
-    // Proportional leads for month based on scenario
     const monthRatio = row.leadsAvg / m.tariffData.leadsAvg;
     const monthLeads = Math.round(m.leadsCount * monthRatio);
     const monthDeals = Math.max(1, Math.round(monthLeads * (m.effectiveConv / 100)));
-    
-    // Cost per month: infrastructure fix + leads cost
     const monthCost = state.tariffFixPerMonth + (monthLeads * m.currentLeadPrice);
 
     accumContacts += row.contacts;
@@ -583,7 +700,6 @@ function renderMonthlyTable(m) {
     `;
   });
 
-  // Total summary row
   html += `
     <tr class="total-row">
       <td><strong>ИТОГО ЗА ${state.tariffMonths} МЕСЯЦА</strong></td>
@@ -601,7 +717,7 @@ function renderMonthlyTable(m) {
 // Copy Structured Client Calculation for Telegram / Email
 function copyClientSummary() {
   const m = calculateMetrics();
-  const formatName = m.isSql ? 'SQL (квалифицированные встречи с ЛПР под ТЗ)' : 'MQL (лиды с подтвержденным интересом)';
+  const formatName = m.isSql ? 'Квалифицированные созвоны/встречи под ТЗ (ставка x3)' : 'Лиды с подтвержденным интересом';
 
   const text = `
 🎯 Расчет окупаемости лидогенерации Call-Talk:
@@ -611,28 +727,36 @@ function copyClientSummary() {
 • Формат лидов: ${formatName}
 • Ставка за лид: ${fmt.rub(m.currentLeadPrice)} (отказы и спам не оплачиваются)
 • Фикс за инфраструктуру: ${fmt.rubPerMonth(state.tariffFixPerMonth)} (${fmt.rub(m.fixTotal)} за весь период)
+• Общие инвестиции: ${fmt.rub(m.totalBudget)} (фикс + оплата за лиды)
 
-📊 Прогноз воронки и результатов:
-• Прогноз лидов: ${m.leadsCount} (вилка ${m.tariffData.leadsMin}–${m.tariffData.leadsMax} лидов)
-• Конверсия в сделку: ${m.effectiveConv}%
+🛡️ ГЛАВНОЕ — ТОЧКА БЕЗУБЫТОЧНОСТИ:
+При вашем среднем чеке ${fmt.rub(state.dealCheck)} и маржинальности ${state.marginPercent}% валовая прибыль со сделки составляет ${fmt.rub(m.profitPerDeal)}.
+Вам достаточно закрыть ВСЕГО ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} переданных лидов (конверсия всего ${m.breakEvenConversion}%), чтобы полностью вернуть 100% затрат на запуск.
+${m.profitDealsCount > 0 ? `Оставшиеся ${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)} первого цикла приносят чистую прибыль!` : `Все последующие сделки генерируют чистую прибыль.`}
+
+💰 Финансовая экономика (при конверсии ${m.effectiveConv}%):
+• Прогноз лидов: ${m.leadsCount} (вилка тарифа: ${m.tariffData.leadsMin}–${m.tariffData.leadsMax})
 • Прогноз закрытых сделок: ${m.dealsCount} ${pluralDeals(m.dealsCount)}
-• Средний чек сделки: ${fmt.rub(state.dealCheck)} (маржинальность ${state.marginPercent}%)
-
-💰 Финансовая экономика:
-• Ожидаемая выручка: ${fmt.rub(m.grossRevenue)}
-• Чистая прибыль клиента: ${fmt.rub(m.netProfit)}
-• Общие инвестиции в Call-Talk: ${fmt.rub(m.totalBudget)}
-• Окупаемость (ROI): ${fmt.pct(m.roi)}
-• Доля расходов на маркетинг: составляет ~${m.costShare}% от привлеченной выручки
-
-🛡️ Точка безубыточности:
-Вам достаточно закрыть всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов (конверсия всего ${m.breakEvenConversion}%), чтобы полностью окупить весь ${state.tariffMonths}-месячный бюджет проекта. Все последующие сделки приносят чистую прибыль.
+• Привлеченная выручка: ${fmt.rub(m.grossRevenue)}
+• Чистая прибыль сверх затрат: +${fmt.rub(m.netProfit)}
+• Окупаемость затрат (ROI): ${fmt.pct(m.roi)}
+• Доля затрат на маркетинг: всего ~${m.costShare}% от привлеченного оборота
   `.trim();
 
   navigator.clipboard.writeText(text).then(() => {
-    showToast('Текст расчета скопирован в буфер обмена!');
+    showToast('Полный расчет скопирован в буфер обмена!');
   }).catch(() => {
     showToast('Ошибка копирования. Выделите текст вручную.');
+  });
+}
+
+// Copy Speech Script Quote
+function copySpeechScript() {
+  const quote = DOM.speechScriptQuote.textContent.trim();
+  navigator.clipboard.writeText(quote).then(() => {
+    showToast('Речевой модуль для встречи скопирован!');
+  }).catch(() => {
+    showToast('Ошибка копирования.');
   });
 }
 
@@ -640,7 +764,7 @@ function copyClientSummary() {
 function copyShareableLink() {
   const url = window.location.href;
   navigator.clipboard.writeText(url).then(() => {
-    showToast('Ссылка с вашими параметрами скопирована!');
+    showToast('Ссылка с текущими параметрами скопирована!');
   }).catch(() => {
     showToast('Не удалось скопировать ссылку.');
   });
@@ -672,6 +796,8 @@ function syncStateToUrl() {
   params.set('chk', state.dealCheck);
   params.set('mg', state.marginPercent);
   params.set('cv', state.conversionPercent);
+  if (state.customLeadPrice) params.set('clp', state.customLeadPrice);
+  if (state.customLeadsCount) params.set('clc', state.customLeadsCount);
   if (state.ltvEnabled) {
     params.set('ltv', '1');
     params.set('ltvc', state.ltvRepeatDeals);
@@ -690,9 +816,11 @@ function loadUrlParams() {
   if (params.has('t')) state.tariffMonths = parseInt(params.get('t'), 10) === 2 ? 2 : 4;
   if (params.has('fmt')) state.leadType = params.get('fmt') === 'sql' ? 'sql' : 'mql';
   if (params.has('lvl')) state.nicheLevel = parseInt(params.get('lvl'), 10) || 2;
-  if (params.has('chk')) state.dealCheck = parseInt(params.get('chk'), 10) || 1200000;
-  if (params.has('mg')) state.marginPercent = parseInt(params.get('mg'), 10) || 20;
+  if (params.has('chk')) state.dealCheck = parseInt(params.get('chk'), 10) || 1000000;
+  if (params.has('mg')) state.marginPercent = parseInt(params.get('mg'), 10) || 12;
   if (params.has('cv')) state.conversionPercent = parseInt(params.get('cv'), 10) || 15;
+  if (params.has('clp')) state.customLeadPrice = parseInt(params.get('clp'), 10);
+  if (params.has('clc')) state.customLeadsCount = parseInt(params.get('clc'), 10);
   if (params.has('ltv')) state.ltvEnabled = params.get('ltv') === '1';
   if (params.has('ltvc')) state.ltvRepeatDeals = parseInt(params.get('ltvc'), 10) || 2;
   if (params.has('sc')) state.scenario = params.get('sc');

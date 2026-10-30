@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Калькулятор окупаемости B2B-аутрича | Call-Talk</title>
-  <meta name="description" content="Интерактивный калькулятор окупаемости email-аутрича Call-Talk: расчет тарифов, MQL и SQL встреч, точки безубыточности и чистой прибыли.">
+  <meta name="description" content="Интерактивный калькулятор окупаемости email-аутрича Call-Talk: расчет окупаемости со сделок, чистой прибыли при марже 10–15%, точки безубыточности и бюджета.">
   
   <!-- Google Fonts: Inter & Manrope -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@
         </div>
         <div class="brand-text-col">
           <span class="brand-title">Калькулятор окупаемости B2B-аутрича</span>
-          <span class="brand-subtitle">Инфраструктура + оплата за результат (MQL / SQL)</span>
+          <span class="brand-subtitle">Инфраструктура + оплата за результат</span>
         </div>
       </div>
 
@@ -55,8 +55,8 @@
     <section class="intro-bar">
       <div class="intro-title-wrap">
         <div>
-          <h1 class="page-headline">Экономика проекта и возврат инвестиций (ROI)</h1>
-          <p class="page-lead">Точный расчет затрат на инфраструктуру, оплаты за результат и чистой прибыли со сделок</p>
+          <h1 class="page-headline">Расчет окупаемости и точки безубыточности</h1>
+          <p class="page-lead">Наглядная математика: сколько сделок окупают проект при реальной марже 10–12% (максимум 15%)</p>
         </div>
       </div>
 
@@ -64,14 +64,14 @@
       <div class="presets-container">
         <span class="presets-label">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-          Быстрые пресеты ниш:
+          Быстрые пресеты:
         </span>
         <div class="presets-chips">
-          <button class="preset-chip" data-preset="metals">🏭 Металлоконструкции (2,5 млн руб.)</button>
-          <button class="preset-chip" data-preset="it">💻 IT-разработка / SaaS (1,8 млн руб.)</button>
-          <button class="preset-chip" data-preset="packaging">📦 Опт и упаковка (450 000 руб.)</button>
-          <button class="preset-chip" data-preset="agro">🚜 Спецтехника и станки (6,5 млн руб.)</button>
-          <button class="preset-chip" data-preset="consulting">💼 Консалтинг и аудит (900 000 руб.)</button>
+          <button class="preset-chip" data-preset="metals">🏭 Металлоконструкции (2,5 млн руб. · маржа 12%)</button>
+          <button class="preset-chip" data-preset="it">💻 IT-разработка / SaaS (1,8 млн руб. · маржа 15%)</button>
+          <button class="preset-chip" data-preset="packaging">📦 Опт и поставки (600 тыс. руб. · маржа 12%)</button>
+          <button class="preset-chip" data-preset="agro">🚜 Спецтехника и станки (5 млн руб. · маржа 10%)</button>
+          <button class="preset-chip" data-preset="consulting">💼 Сервис и аудит (800 тыс. руб. · маржа 15%)</button>
         </div>
       </div>
     </section>
@@ -79,9 +79,14 @@
     <!-- Main Grid: Left Controls, Right Results -->
     <div class="calc-grid">
       
-      <!-- LEFT COLUMN: INPUT CONTROLS -->
+      <!-- LEFT COLUMN: INPUT CONTROLS (Вводятся вручную, ничего не предугадывается) -->
       <div class="calc-panel">
         
+        <div class="panel-header-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+          Параметры для расчета (ручной ввод)
+        </div>
+
         <!-- STEP 1: Tariff & Duration -->
         <div class="panel-section">
           <div class="section-label">
@@ -92,7 +97,7 @@
 
           <div class="option-cards-row">
             <div class="option-card active" id="tariff4" data-months="4" data-fix="39000">
-              <span class="badge-recommended">Флагман</span>
+              <span class="badge-recommended">Основной</span>
               <span class="option-card-title">4 месяца (Масштаб)</span>
               <span class="option-card-desc">База: 5 100 контактов<br>Прогноз: 63–94 лида</span>
               <span class="option-card-price">39 000 руб./мес</span>
@@ -106,24 +111,24 @@
           </div>
         </div>
 
-        <!-- STEP 2: Lead Model (MQL vs SQL x3) -->
+        <!-- STEP 2: Lead Model (Confirmed Interest vs Meeting x3) -->
         <div class="panel-section">
           <div class="section-label">
             <span>2. Формат оплаты за результат</span>
             <span class="text-muted" id="labelLeadFormatNote">Базовая модель</span>
           </div>
-          <div class="section-hint">Оплата только за валидный интерес. Отказы и нецелевые не оплачиваются.</div>
+          <div class="section-hint">Оплата только за подтвержденный интерес. Отказы и нецелевые — 0 руб..</div>
 
           <div class="option-cards-row">
             <div class="option-card active" id="leadTypeMQL" data-type="mql" data-mult="1">
-              <span class="option-card-title">MQL (Подтвержденный интерес)</span>
-              <span class="option-card-desc">Ответ ЛПР с интересом, запросом КП или контактом</span>
+              <span class="option-card-title">Подтвержденный интерес</span>
+              <span class="option-card-desc">Ответ ЛПР с интересом, запросом КП, цен или контактом</span>
               <span class="option-card-price" id="mqlPriceText">2 800 руб. / лид</span>
             </div>
 
             <div class="option-card" id="leadTypeSQL" data-type="sql" data-mult="3">
               <span class="badge-x3">x3 цена</span>
-              <span class="option-card-title">SQL (Подтвержденная встреча)</span>
+              <span class="option-card-title">Квалифицированный созвон</span>
               <span class="option-card-desc">Согласован слот созвона или встречи с ЛПР под ТЗ</span>
               <span class="option-card-price" id="sqlPriceText">8 400 руб. / лид</span>
             </div>
@@ -133,17 +138,17 @@
         <!-- STEP 3: Niche Complexity Level & Lead Price -->
         <div class="panel-section">
           <div class="section-label">
-            <span>3. Уровень сложности ниши (профиль ЦА)</span>
+            <span>3. Ставка за лид (по профилю покупателей)</span>
             <span class="text-muted" id="labelCurrentNicheLevel">Уровень 2</span>
           </div>
-          <div class="section-hint">Цена определяется по профилю покупателей клиента, а не по самому клиенту.</div>
+          <div class="section-hint">Выберите уровень по профилю ЦА клиента, либо введите согласованную ставку вручную:</div>
 
           <div class="level-cards">
             <!-- Level 1 -->
             <div class="level-card" data-level="1" data-mql-price="1800">
               <div class="level-info-col">
                 <span class="level-name">Уровень 1: Малый бизнес / ИП</span>
-                <span class="level-desc">Выручка ЦА до 500 млн руб., штат до 100 чел., чек до 500 000 руб.</span>
+                <span class="level-desc">Выручка ЦА до 500 млн руб., штат до 100 чел.</span>
               </div>
               <div class="level-price-col">
                 <span class="level-price-val" id="lvl1PriceVal">1 800 руб.</span>
@@ -155,7 +160,7 @@
             <div class="level-card active" data-level="2" data-mql-price="2800">
               <div class="level-info-col">
                 <span class="level-name">Уровень 2: Средний бизнес (Дефолт)</span>
-                <span class="level-desc">Выручка ЦА 500 млн – 1,5 млрд руб., штат 100–250 чел., чек 0,5–3 млн руб.</span>
+                <span class="level-desc">Выручка ЦА 500 млн – 1,5 млрд руб., штат 100–250 чел.</span>
               </div>
               <div class="level-price-col">
                 <span class="level-price-val" id="lvl2PriceVal">2 800 руб.</span>
@@ -167,7 +172,7 @@
             <div class="level-card" data-level="3" data-mql-price="4800">
               <div class="level-info-col">
                 <span class="level-name">Уровень 3: Крупный бизнес / Enterprise</span>
-                <span class="level-desc">Выручка ЦА от 1,5 млрд руб., C-level ЛПР, чек от 3 млн руб.</span>
+                <span class="level-desc">Выручка ЦА от 1,5 млрд руб., C-level ЛПР</span>
               </div>
               <div class="level-price-col">
                 <span class="level-price-val" id="lvl3PriceVal">4 800 руб.</span>
@@ -175,54 +180,67 @@
               </div>
             </div>
           </div>
+
+          <!-- Custom Lead Price Input -->
+          <div class="custom-field-row" style="margin-top: 10px;">
+            <div class="custom-field-label">Своя цена лида, руб. (если согласована индивидуально):</div>
+            <div class="currency-input-wrapper small">
+              <input type="text" id="customLeadPriceInput" class="number-input" placeholder="Оставьте пустым для цены уровня">
+              <span class="input-suffix">руб.</span>
+            </div>
+          </div>
         </div>
 
-        <!-- STEP 4: Client Unit Economics -->
+        <!-- STEP 4: Client Unit Economics (Ручной ввод без предугадываний) -->
         <div class="panel-section">
           <div class="section-label">
-            <span>4. Экономика клиента (сделки и конверсия)</span>
+            <span>4. Экономика клиента (сделки и маржа)</span>
           </div>
 
           <!-- Average Check -->
           <div class="input-with-slider" style="margin-bottom: 16px;">
             <div class="section-label" style="margin-bottom: 4px;">
-              <span>Средний чек первой сделки</span>
-              <span id="dealCheckDisplay" style="color: var(--primary); font-weight: 800;">1 200 000 руб.</span>
+              <span>Средний чек одной сделки</span>
+              <span id="dealCheckDisplay" style="color: var(--primary); font-weight: 800;">1 000 000 руб.</span>
             </div>
             <div class="input-row">
               <div class="currency-input-wrapper">
-                <input type="text" id="dealCheckInput" class="number-input" value="1 200 000">
+                <input type="text" id="dealCheckInput" class="number-input" value="1 000 000">
                 <span class="input-suffix">руб.</span>
               </div>
             </div>
-            <input type="range" id="dealCheckSlider" min="100000" max="15000000" step="50000" value="1200000">
+            <input type="range" id="dealCheckSlider" min="100000" max="15000000" step="50000" value="1000000">
             <div class="quick-pills">
               <button class="pill-btn" data-check="300000">300 тыс.</button>
-              <button class="pill-btn" data-check="600000">600 тыс.</button>
-              <button class="pill-btn active" data-check="1200000">1,2 млн</button>
+              <button class="pill-btn" data-check="500000">500 тыс.</button>
+              <button class="pill-btn active" data-check="1000000">1,0 млн</button>
               <button class="pill-btn" data-check="2500000">2,5 млн</button>
               <button class="pill-btn" data-check="5000000">5 млн</button>
               <button class="pill-btn" data-check="10000000">10 млн</button>
             </div>
           </div>
 
-          <!-- Margin % -->
+          <!-- Margin % (СТРОГО 10-12%, МАКСИМУМ 15%) -->
           <div class="input-with-slider" style="margin-bottom: 16px;">
             <div class="section-label" style="margin-bottom: 4px;">
               <span>Маржинальность сделки (чистая маржа)</span>
-              <span id="marginDisplay" style="color: var(--teal); font-weight: 800;">20%</span>
+              <span id="marginDisplay" style="color: var(--teal); font-weight: 800;">12%</span>
             </div>
             <div class="input-row">
               <div class="currency-input-wrapper">
-                <input type="number" id="marginInput" class="number-input" min="5" max="95" value="20">
+                <input type="number" id="marginInput" class="number-input" min="1" max="90" value="12">
                 <span class="input-suffix">%</span>
               </div>
             </div>
-            <input type="range" id="marginSlider" min="5" max="90" step="1" value="20">
-            <div class="range-labels">
-              <span>5% (Низкая)</span>
-              <span>20% (Стандарт B2B)</span>
-              <span>50%+ (Услуги/IT)</span>
+            <input type="range" id="marginSlider" min="5" max="30" step="1" value="12">
+            <div class="quick-pills">
+              <button class="pill-btn pill-margin" data-margin="10">10% (консервативно)</button>
+              <button class="pill-btn pill-margin active" data-margin="12">12% (стандарт B2B)</button>
+              <button class="pill-btn pill-margin" data-margin="15">15% (максимум)</button>
+            </div>
+            <div class="margin-guideline-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span><strong>Стандарт Call-Talk:</strong> закладываем маржу от 10% до 12%, и максимум 15%, чтобы окупаемость была реалистичной и не завышала ожидания.</span>
             </div>
           </div>
 
@@ -234,21 +252,34 @@
             </div>
             <div class="input-row">
               <div class="currency-input-wrapper">
-                <input type="number" id="conversionInput" class="number-input" min="1" max="100" value="15">
+                <input type="number" id="conversionInput" class="number-input" min="1" max="60" value="15">
                 <span class="input-suffix">%</span>
               </div>
             </div>
-            <input type="range" id="conversionSlider" min="1" max="60" step="1" value="15">
-            <div class="section-hint" id="convHintText" style="margin-top: 4px; margin-bottom: 0;">
-              Для MQL средний ориентир 10–20%. Для встреч (SQL) средний ориентир 25–40%.
+            <input type="range" id="conversionSlider" min="1" max="40" step="1" value="15">
+            <div class="quick-pills">
+              <button class="pill-btn pill-conv" data-conv="5">5%</button>
+              <button class="pill-btn pill-conv" data-conv="10">10%</button>
+              <button class="pill-btn pill-conv active" data-conv="15">15% (дефолт)</button>
+              <button class="pill-btn pill-conv" data-conv="20">20%</button>
+              <button class="pill-btn pill-conv" data-conv="30">30% (созвоны)</button>
+            </div>
+          </div>
+
+          <!-- Custom Leads Count (Optional manual override) -->
+          <div class="custom-field-row" style="margin-bottom: 16px;">
+            <div class="custom-field-label">Свое количество лидов за период (если нужно задать вручную):</div>
+            <div class="currency-input-wrapper small">
+              <input type="number" id="customLeadsInput" class="number-input" placeholder="По умолчанию: прогноз тарифа">
+              <span class="input-suffix">лидов</span>
             </div>
           </div>
 
           <!-- LTV Repeat Deals Toggle -->
           <div class="toggle-row">
             <div class="toggle-label-wrap">
-              <span class="toggle-title">Учитывать LTV и повторные заказы</span>
-              <span class="toggle-desc">Повторные продажи без затрат на маркетинг</span>
+              <span class="toggle-title">Учитывать повторные заказы (LTV)</span>
+              <span class="toggle-desc">Только если клиент сам подтвердил регулярные дозаказы</span>
             </div>
             <label class="switch">
               <input type="checkbox" id="ltvToggle">
@@ -274,110 +305,154 @@
 
       </div>
 
-      <!-- RIGHT COLUMN: RESULTS & BUSINESS METRICS -->
+      <!-- RIGHT COLUMN: RESULTS & BUSINESS METRICS (ГЛАВНОЕ ПО ОКУПАЕМОСТИ НАВЕРХУ) -->
       <div class="results-panel">
         
-        <!-- HERO ROI CARD -->
-        <div class="hero-roi-card">
-          <div class="hero-top-row">
-            <div class="hero-badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-              Прогноз окупаемости
+        <!-- ==================== 1. САМОЕ ГЛАВНОЕ: ТОЧКА БЕЗУБЫТОЧНОСТИ ==================== -->
+        <div class="breakeven-hero-card">
+          <div class="breakeven-hero-top">
+            <div class="breakeven-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              Главный показатель окупаемости
             </div>
             <div class="scenario-pills">
-              <button class="scenario-pill" data-scenario="pessimistic" title="Нижняя граница лидов и скромная конверсия">Стресс-тест</button>
-              <button class="scenario-pill active" data-scenario="base" title="Средний прогноз воронки">Реалистичный</button>
-              <button class="scenario-pill" data-scenario="optimistic" title="Верхняя граница воронки">Оптимистичный</button>
+              <button class="scenario-pill" data-scenario="pessimistic" title="Консервативная оценка">Стресс-тест</button>
+              <button class="scenario-pill active" data-scenario="base" title="Базовый ориентир">Реалистичный</button>
+              <button class="scenario-pill" data-scenario="optimistic" title="Верхняя граница">Оптимистичный</button>
             </div>
           </div>
 
-          <div class="hero-main-stats">
-            <div class="hero-stat-col">
-              <span class="hero-stat-label">Окупаемость инвестиций (ROI)</span>
-              <span class="hero-stat-val-huge" id="heroRoiVal">+562%</span>
-            </div>
-            <div class="hero-stat-col">
-              <span class="hero-stat-label">Чистая прибыль клиента</span>
-              <span class="hero-stat-val-large" id="heroNetProfitVal">2 092 000 руб.</span>
+          <div class="breakeven-main-headline">
+            <span class="breakeven-lead-intro">Для полной окупаемости договора Call-Talk:</span>
+            <div class="breakeven-big-statement" id="breakevenBigText">
+              Достаточно закрыть <span class="highlight-deals">всего 3 сделки</span> из <span id="beTotalLeads">78</span> лидов
             </div>
           </div>
 
-          <div class="hero-submetrics">
-            <div class="hero-submetric-item">
-              <span class="hero-submetric-title">Привлеченная выручка</span>
-              <span class="hero-submetric-val" id="heroRevenueVal">14 040 000 руб.</span>
+          <!-- Dual Highlights: Deals & Needed Conversion -->
+          <div class="breakeven-stats-grid">
+            <div class="be-stat-col">
+              <span class="be-stat-label">Сделок для 100% окупаемости</span>
+              <span class="be-stat-val" id="beDealsVal">3 сделки</span>
+              <span class="be-stat-sub" id="beProfitPerDealSub">Маржа со сделки: 120 000 руб. (12%)</span>
             </div>
-            <div class="hero-submetric-item">
-              <span class="hero-submetric-title">Инвестиции в Call-Talk</span>
-              <span class="hero-submetric-val" id="heroBudgetVal">374 400 руб.</span>
+
+            <div class="be-stat-col">
+              <span class="be-stat-label">Нужная конверсия из лида в сделку</span>
+              <span class="be-stat-val accent" id="beConversionVal">всего 3.8%</span>
+              <span class="be-stat-sub">Даже при скромных продажах проект в плюсе</span>
             </div>
-            <div class="hero-submetric-item">
-              <span class="hero-submetric-title">Доля затрат в выручке</span>
-              <span class="hero-submetric-val" id="heroCostShareVal">~2.7%</span>
+          </div>
+
+          <!-- Visual Progress Scale: Break-even vs Pure Profit Deals -->
+          <div class="be-progress-wrap">
+            <div class="be-progress-labels">
+              <span id="beLabelBreakEven">🎯 3 сделки покрывают весь бюджет</span>
+              <span id="beLabelProfitDeals" class="text-teal">💰 Еще 8 сделок — чистая прибыль</span>
             </div>
+            <div class="be-progress-bar">
+              <div class="be-progress-fill-be" id="beProgressFillBe" style="width: 27%;"></div>
+              <div class="be-progress-fill-profit" id="beProgressFillProfit" style="width: 73%;"></div>
+            </div>
+          </div>
+
+          <div class="breakeven-explanation-text" id="breakevenExplanationText">
+            При среднем чеке 1 000 000 руб. и маржинальности 12% валовая прибыль с одной сделки составляет 120 000 руб.. Весь 4-месячный бюджет проекта (374 400 руб.) окупается уже с 3-й закрытой сделки. Оставшиеся 8 сделок первого цикла приносят клиенту чистую прибыль сверх затрат на запуск.
           </div>
         </div>
 
-        <!-- BREAK-EVEN BANNER (IRONCLAD MATH) -->
-        <div class="breakeven-banner">
-          <div class="breakeven-icon-wrap">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <!-- ==================== 2. ФИНАНСОВЫЙ ИТОГ (ЧИСТАЯ ПРИБЫЛЬ И БЮДЖЕТ) ==================== -->
+        <div class="financial-summary-card">
+          <div class="fin-stat-col">
+            <span class="fin-stat-label">Чистая прибыль клиента</span>
+            <span class="fin-stat-val-huge green" id="heroNetProfitVal">+945 600 руб.</span>
+            <span class="fin-stat-sub">Валовая прибыль минус бюджет</span>
           </div>
-          <div class="breakeven-text-col">
-            <div class="breakeven-title">Точка безубыточности договора</div>
-            <div class="breakeven-desc" id="breakevenDescText">
-              Клиенту достаточно закрыть <strong>всего 2 сделки</strong> из 78 лидов (конверсия <strong>2.6%</strong>), чтобы полностью окупить весь 4-месячный бюджет проекта.
-            </div>
+
+          <div class="fin-stat-col">
+            <span class="fin-stat-label">Окупаемость инвестиций (ROI)</span>
+            <span class="fin-stat-val-huge purple" id="heroRoiVal">+253%</span>
+            <span class="fin-stat-sub" id="heroRomiMultipleSub">Возврат бюджета в 3.5 раза</span>
+          </div>
+
+          <div class="fin-stat-col">
+            <span class="fin-stat-label">Общий бюджет Call-Talk</span>
+            <span class="fin-stat-val-huge dark" id="heroBudgetVal">374 400 руб.</span>
+            <span class="fin-stat-sub" id="heroBudgetBreakdownSub">156 000 руб. фикс + 78 лидов</span>
           </div>
         </div>
 
-        <!-- FUNNEL & OUTPUT BOXES -->
+        <!-- ==================== 3. ЧТО СКАЗАТЬ КЛИЕНТУ НА ВСТРЕЧЕ ==================== -->
+        <div class="speech-script-card">
+          <div class="speech-script-header">
+            <div class="speech-script-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              Что сказать клиенту на встрече (готовый скрипт аргументации):
+            </div>
+            <button id="btnCopyScript" class="btn btn-sm btn-outline-white" title="Скопировать фразу для созвона">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Скопировать фразу
+            </button>
+          </div>
+          <div class="speech-script-quote" id="speechScriptQuote">
+            «За 4 месяца мы передадим вам 78 лидов с подтвержденным интересом. Ваши суммарные инвестиции — 374 400 руб. При вашем чеке 1 000 000 руб. и марже 12% валовая прибыль с одной сделки — 120 000 руб. Поэтому для полной окупаемости вам достаточно закрыть всего 3 из 78 лидов (конверсия всего 3,8%). Всё, что вы закроете сверх этого (еще 8 сделок на 960 000 руб. чистой прибыли), остаётся вашим доходом сверх затрат на запуск.»
+          </div>
+        </div>
+
+        <!-- ==================== РАЗДЕЛИТЕЛЬ: ВТОРОСТЕПЕННЫЕ ПОКАЗАТЕЛИ ==================== -->
+        <div class="secondary-divider">
+          <span class="secondary-divider-line"></span>
+          <span class="secondary-divider-text">Второстепенные метрики и детальная воронка</span>
+          <span class="secondary-divider-line"></span>
+        </div>
+
+        <!-- ==================== 4. ВТОРОСТЕПЕННЫЕ ПОКАЗАТЕЛИ (СДВИНУТЫ НИЖЕ) ==================== -->
         <div class="metrics-cards-grid">
-          <!-- Box 1: Leads Forecast -->
+          <!-- Box 1: Revenue -->
           <div class="stat-box">
             <div class="stat-box-header">
-              <span class="stat-box-title">Прогноз лидов</span>
+              <span class="stat-box-title">Привлеченный оборот (выручка)</span>
+              <svg class="stat-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+            </div>
+            <div class="stat-box-val" id="statRevenueVal">11 000 000 руб.</div>
+            <div class="stat-box-footer" id="statCostShareVal">Доля затрат в обороте: ~3.4%</div>
+          </div>
+
+          <!-- Box 2: Closed Deals -->
+          <div class="stat-box">
+            <div class="stat-box-header">
+              <span class="stat-box-title">Прогноз закрытых сделок</span>
+              <svg class="stat-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+            </div>
+            <div class="stat-box-val" id="statDealsVal">11–12 сделок</div>
+            <div class="stat-box-footer" id="statDealsProfit">Маржа со сделки: 120 000 руб.</div>
+          </div>
+
+          <!-- Box 3: Leads -->
+          <div class="stat-box">
+            <div class="stat-box-header">
+              <span class="stat-box-title">Переданных лидов за срок</span>
               <svg class="stat-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
             <div class="stat-box-val" id="statLeadsVal">78 лидов</div>
             <div class="stat-box-footer" id="statLeadsRange">Диапазон: 63–94 лида</div>
           </div>
 
-          <!-- Box 2: Closed Deals -->
-          <div class="stat-box">
-            <div class="stat-box-header">
-              <span class="stat-box-title">Закрытые сделки</span>
-              <svg class="stat-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-            </div>
-            <div class="stat-box-val" id="statDealsVal">11–12 сделок</div>
-            <div class="stat-box-footer" id="statDealsProfit">Маржа со сделки: 240 000 руб.</div>
-          </div>
-
-          <!-- Box 3: Budget Breakdown -->
-          <div class="stat-box">
-            <div class="stat-box-header">
-              <span class="stat-box-title">Бюджет проекта</span>
-              <svg class="stat-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>
-            </div>
-            <div class="stat-box-val" id="statBudgetVal">374 400 руб.</div>
-            <div class="stat-box-footer" id="statBudgetBreakdown">Фикс 156 000 руб. + Лиды 218 400 руб.</div>
-          </div>
-
           <!-- Box 4: CAC -->
           <div class="stat-box">
             <div class="stat-box-header">
-              <span class="stat-box-title">Стоимость клиента (CAC)</span>
+              <span class="stat-box-title">Стоимость привлечения (CAC)</span>
               <svg class="stat-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
             </div>
-            <div class="stat-box-val" id="statCacVal">32 000 руб.</div>
-            <div class="stat-box-footer" id="statCacCompare">Приносит выручки: 1,2 млн руб.</div>
+            <div class="stat-box-val" id="statCacVal">34 000 руб.</div>
+            <div class="stat-box-footer" id="statCacCompare">Приносит выручки: 1,0 млн руб.</div>
           </div>
         </div>
 
         <!-- MONTHLY TIMELINE TABLE -->
         <div class="table-card">
           <div class="table-title-row">
-            <span class="table-title">Помесячная воронка и график инвестиций</span>
+            <span class="table-title">Помесячная воронка и график платежей</span>
             <span class="table-badge" id="tableBadgePeriod">Спринты по 1 мес</span>
           </div>
 
@@ -408,7 +483,7 @@
             <ul class="criteria-list">
               <li>ЛПР подтвердил интерес к теме предложения</li>
               <li>Запросил КП, прайс, расчет или условия</li>
-              <li>Согласовал встречу / звонок (для формата SQL)</li>
+              <li>Согласовал встречу / звонок (для формата созвона)</li>
               <li>Передал прямой контакт профильного лица</li>
             </ul>
           </div>
