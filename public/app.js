@@ -547,7 +547,7 @@ function render() {
   // 1. Tariffs
   DOM.tariff4.classList.toggle('active', state.tariffMonths === 4);
   DOM.tariff2.classList.toggle('active', state.tariffMonths === 2);
-  DOM.tableBadgePeriod.textContent = `Срок: ${state.tariffMonths} месяца`;
+  DOM.tableBadgePeriod.textContent = state.tariffMonths === 2 ? 'Срок: 2 месяца (тест)' : 'Срок: 4 месяца';
 
   // 2. Mailboxes
   DOM.mailboxBtns.forEach(btn => {
@@ -834,7 +834,7 @@ function copyClientSummary() {
 • Окупаемость затрат (ROI): ${fmt.pct(m.roi)} (возврат бюджета в ${m.romiMultiple} раза)
 
 Условия проекта:
-• Срок договора: ${state.tariffMonths} месяца
+• Срок договора: ${state.tariffMonths} месяца${state.tariffMonths === 2 ? ' (тест)' : ''}
 • Почтовая инфраструктура: ${state.mailboxesCount} ящиков Яндекс 360
 • Прогноз лидов: ${m.leadsCount} лидов с подтвержденным интересом
 • Ставка за лид: ${fmt.rub(m.currentLeadPrice)} (отказы — 0 руб.)
