@@ -675,9 +675,8 @@ function render() {
   DOM.heroRoiVal.style.color = m.roi >= 0 ? 'var(--primary)' : '#DC2626';
   DOM.heroRomiMultipleSub.textContent = `Возврат бюджета в ${m.romiMultiple} раза`;
 
-  // 5. Бюджет Call-Talk
-  DOM.heroBudgetVal.textContent = fmt.rub(m.totalBudget);
-  DOM.heroBudgetBreakdownSub.textContent = `${fmt.rub(m.fixTotal)} фикс + ${m.leadsCount} лидов`;
+  if (DOM.heroBudgetVal) DOM.heroBudgetVal.textContent = fmt.rub(m.totalBudget);
+  if (DOM.heroBudgetBreakdownSub) DOM.heroBudgetBreakdownSub.textContent = `${fmt.rub(m.fixTotal)} фикс + ${m.leadsCount} лидов`;
 
   // ==================== 2. ПОМЕСЯЧНЫЙ ПЛАН И ПЛАТЕЖИ ====================
   renderMonthlyTable(m);
