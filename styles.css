@@ -587,6 +587,95 @@ input:checked + .slider::before {
   gap: 16px;
 }
 
+/* Scenarios Bar (Пессимистичный / Средний / Оптимистичный) */
+.scenarios-bar {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.scenario-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+  font-family: inherit;
+  box-shadow: var(--shadow-xs);
+}
+
+.scenario-btn:hover {
+  border-color: var(--border-hover);
+  background: #F8FAFC;
+}
+
+.scenario-btn-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.scenario-btn-leads {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* Scenario active states */
+.scenario-btn[data-scenario="pessimistic"].active {
+  background: #F8FAFC;
+  border-color: #64748B;
+  box-shadow: 0 0 0 1px #64748B, var(--shadow-sm);
+}
+
+.scenario-btn[data-scenario="pessimistic"].active .scenario-btn-title {
+  color: #334155;
+}
+
+.scenario-btn[data-scenario="pessimistic"].active .scenario-btn-leads {
+  color: #475569;
+  font-weight: 700;
+}
+
+.scenario-btn[data-scenario="medium"].active {
+  background: #EEF2FF;
+  border-color: #4F46E5;
+  box-shadow: 0 0 0 1px #4F46E5, var(--shadow-sm);
+}
+
+.scenario-btn[data-scenario="medium"].active .scenario-btn-title {
+  color: #4338CA;
+}
+
+.scenario-btn[data-scenario="medium"].active .scenario-btn-leads {
+  color: #3730A3;
+  font-weight: 700;
+}
+
+.scenario-btn[data-scenario="optimistic"].active {
+  background: #ECFDF5;
+  border-color: #10B981;
+  box-shadow: 0 0 0 1px #10B981, var(--shadow-sm);
+}
+
+.scenario-btn[data-scenario="optimistic"].active .scenario-btn-title {
+  color: #047857;
+}
+
+.scenario-btn[data-scenario="optimistic"].active .scenario-btn-leads {
+  color: #065F46;
+  font-weight: 700;
+}
+
 /* 1. Monthly Table (СУНУТО ВЫШЕ!) */
 .table-card {
   background: #FFFFFF;

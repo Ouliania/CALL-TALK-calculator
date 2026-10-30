@@ -18,6 +18,21 @@ const fmt = {
   rub: (val) => `${fmt.num(val)} руб.`,
   rubPerMonth: (val) => `${fmt.num(val)} руб./мес`,
   pct: (val) => `${val > 0 ? '+' : ''}${Math.round(val)}%`,
+  pluralLeads: (n) => {
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 19) return 'лидов';
+    if (mod10 === 1) return 'лид';
+    if (mod10 >= 2 && mod10 <= 4) return 'лида';
+    return 'лидов';
+  },
+  genitiveLeads: (n) => {
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 19) return 'лидов';
+    if (mod10 === 1) return 'лида';
+    return 'лидов';
+  },
   cleanNum: (str) => {
     if (typeof str === 'number') return str;
     if (!str) return 0;
@@ -44,7 +59,8 @@ const state = {
   tariffFixPerMonth: 39000,
   mailboxesCount: 10,       // 10, 15, 20, 30
   leadPrice: 2800,          // manual input
-  leadsCount: 78,           // 78 for 4m (10 boxes), 34 for 2m (10 boxes)
+  scenario: 'medium',       // 'pessimistic' | 'medium' | 'optimistic' | 'custom'
+  leadsCount: 78,           // dynamic based on scenario and mailboxes
   dealCheck: 1000000,       // average deal in rubles
   marginPercent: 12,        // 12% (strictly 10-12%, max 15%)
   conversionPercent: 15,    // 15%
@@ -54,29 +70,76 @@ const state = {
   ltvRepeatDeals: 2         // +2 repeat deals in subscription mode
 };
 
-// Base tariff benchmarks
+// Base tariff benchmarks (Call-Talk conversion standards)
 const TARIFF_DATA = {
   4: {
     months: 4,
     fixPerMonth: 39000,
-    baseLeads: 78,
-    monthly: [
-      { name: '1-й месяц (запуск и прогрев)', ratio: 11 / 78 },
-      { name: '2-й месяц', ratio: 22 / 78 },
-      { name: '3-й месяц', ratio: 22 / 78 },
-      { name: '4-й месяц', ratio: 23 / 78 }
-    ]
+    scenarios: {
+      pessimistic: {
+        baseLeads: 63,
+        monthly: [
+          { name: '1-й месяц (запуск и прогрев)', leads: 9 },
+          { name: '2-й месяц', leads: 18 },
+          { name: '3-й месяц', leads: 18 },
+          { name: '4-й месяц', leads: 18 }
+        ]
+      },
+      medium: {
+        baseLeads: 78,
+        monthly: [
+          { name: '1-й месяц (запуск и прогрев)', leads: 11 },
+          { name: '2-й месяц', leads: 22 },
+          { name: '3-й месяц', leads: 22 },
+          { name: '4-й месяц', leads: 23 }
+        ]
+      },
+      optimistic: {
+        baseLeads: 94,
+        monthly: [
+          { name: '1-й месяц (запуск и прогрев)', leads: 14 },
+          { name: '2-й месяц', leads: 26 },
+          { name: '3-й месяц', leads: 27 },
+          { name: '4-й месяц', leads: 27 }
+        ]
+      }
+    }
   },
   2: {
     months: 2,
     fixPerMonth: 56000,
-    baseLeads: 34,
-    monthly: [
-      { name: '1-й месяц (запуск и прогрев)', ratio: 11 / 34 },
-      { name: '2-й месяц', ratio: 23 / 34 }
-    ]
+    scenarios: {
+      pessimistic: {
+        baseLeads: 27,
+        monthly: [
+          { name: '1-й месяц (запуск и прогрев)', leads: 9 },
+          { name: '2-й месяц', leads: 18 }
+        ]
+      },
+      medium: {
+        baseLeads: 34,
+        monthly: [
+          { name: '1-й месяц (запуск и прогрев)', leads: 11 },
+          { name: '2-й месяц', leads: 23 }
+        ]
+      },
+      optimistic: {
+        baseLeads: 41,
+        monthly: [
+          { name: '1-й месяц (запуск и прогрев)', leads: 14 },
+          { name: '2-й месяц', leads: 27 }
+        ]
+      }
+    }
   }
 };
+
+function getScenarioLeads(scenarioName, months = state.tariffMonths, mailboxes = state.mailboxesCount) {
+  const mult = mailboxes / 10;
+  const scObj = TARIFF_DATA[months]?.scenarios[scenarioName];
+  if (!scObj) return 78;
+  return Math.round(scObj.baseLeads * mult);
+}
 
 // DOM Elements
 const DOM = {
@@ -124,6 +187,12 @@ const DOM = {
   ltvSlider: document.getElementById('ltvSlider'),
   ltvMultiplierDisplay: document.getElementById('ltvMultiplierDisplay'),
   quickLtvPills: document.querySelectorAll('.pill-ltv'),
+
+  // Scenario Selector Bar
+  scenarioBtns: document.querySelectorAll('.scenario-btn'),
+  scenarioLeadsPessimistic: document.getElementById('scenarioLeadsPessimistic'),
+  scenarioLeadsMedium: document.getElementById('scenarioLeadsMedium'),
+  scenarioLeadsOptimistic: document.getElementById('scenarioLeadsOptimistic'),
 
   // Forecast & Revenue (Hero Block at Top)
   forecastHeadline: document.getElementById('forecastHeadline'),
@@ -223,11 +292,33 @@ function bindEvents() {
     if (e.key === 'Enter') e.target.blur();
   });
 
+  // Scenario selection (Пессимистичный / Средний / Оптимистичный)
+  if (DOM.scenarioBtns) {
+    DOM.scenarioBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sc = btn.dataset.scenario;
+        setScenario(sc);
+      });
+    });
+  }
+
   // Leads count input (manual override)
   DOM.leadsCountInput.addEventListener('input', (e) => {
-    const val = parseInt(e.target.value, 10);
-    if (val > 0) {
+    const val = parseInt(e.target.value.replace(/\D/g, ''), 10);
+    if (!isNaN(val) && val > 0) {
       state.leadsCount = Math.max(1, Math.min(val, 50000));
+      const pLeads = getScenarioLeads('pessimistic');
+      const mLeads = getScenarioLeads('medium');
+      const oLeads = getScenarioLeads('optimistic');
+      if (state.leadsCount === pLeads) {
+        state.scenario = 'pessimistic';
+      } else if (state.leadsCount === mLeads) {
+        state.scenario = 'medium';
+      } else if (state.leadsCount === oLeads) {
+        state.scenario = 'optimistic';
+      } else {
+        state.scenario = 'custom';
+      }
       render();
     }
   });
@@ -430,11 +521,18 @@ function bindEvents() {
   if (DOM.btnCopyConclusions) DOM.btnCopyConclusions.addEventListener('click', copyConclusions);
 }
 
-// Calculate leads automatically from mailboxes (10 -> 1x, 20 -> 2x, 30 -> 3x)
+// Set Scenario ('pessimistic' | 'medium' | 'optimistic')
+function setScenario(sc) {
+  state.scenario = sc;
+  state.leadsCount = getScenarioLeads(sc);
+  DOM.leadsCountInput.value = state.leadsCount;
+  render();
+}
+
+// Calculate leads automatically from mailboxes (scales current scenario)
 function updateLeadsFromMailboxes() {
-  const base = state.tariffMonths === 4 ? 78 : 34;
-  const mult = state.mailboxesCount / 10;
-  state.leadsCount = Math.round(base * mult);
+  const sc = (state.scenario && state.scenario !== 'custom') ? state.scenario : 'medium';
+  state.leadsCount = getScenarioLeads(sc);
   DOM.leadsCountInput.value = state.leadsCount;
 }
 
@@ -544,6 +642,27 @@ function syncSliderToCheck(val) {
 function render() {
   const m = calculateMetrics();
 
+  // 0. Scenarios (Пессимистичный / Средний / Оптимистичный)
+  const pLeads = getScenarioLeads('pessimistic');
+  const mLeads = getScenarioLeads('medium');
+  const oLeads = getScenarioLeads('optimistic');
+
+  if (DOM.scenarioLeadsPessimistic) {
+    DOM.scenarioLeadsPessimistic.textContent = `${pLeads} ${fmt.pluralLeads(pLeads)}`;
+  }
+  if (DOM.scenarioLeadsMedium) {
+    DOM.scenarioLeadsMedium.textContent = `${mLeads} ${fmt.pluralLeads(mLeads)}`;
+  }
+  if (DOM.scenarioLeadsOptimistic) {
+    DOM.scenarioLeadsOptimistic.textContent = `${oLeads} ${fmt.pluralLeads(oLeads)}`;
+  }
+
+  if (DOM.scenarioBtns) {
+    DOM.scenarioBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.scenario === state.scenario);
+    });
+  }
+
   // 1. Tariffs
   DOM.tariff4.classList.toggle('active', state.tariffMonths === 4);
   DOM.tariff2.classList.toggle('active', state.tariffMonths === 2);
@@ -641,14 +760,19 @@ function render() {
   if (DOM.forecastDealsVal) DOM.forecastDealsVal.textContent = `${m.dealsCount} ${pluralDeals(m.dealsCount)}`;
   if (DOM.forecastRevenueVal) DOM.forecastRevenueVal.textContent = fmt.rub(m.grossRevenue);
   if (DOM.forecastSubText) {
+    const scPrefix = state.scenario === 'pessimistic' ? 'Пессимистичный сценарий: из '
+      : state.scenario === 'optimistic' ? 'Оптимистичный сценарий: из '
+      : state.scenario === 'custom' ? 'Индивидуальный расчет: из '
+      : 'Из ';
+
     if (state.ltvEnabled) {
       if (state.ltvMode === 'coeff') {
-        DOM.forecastSubText.textContent = `Из ${m.leadsCount} лидов при конверсии ${state.conversionPercent}% (${m.baseDealsCount} первичных + ${m.repeatDealsCount} повторных по коэфф. ${state.ltvCoeff}×)`;
+        DOM.forecastSubText.textContent = `${scPrefix}${m.leadsCount} ${fmt.genitiveLeads(m.leadsCount)} с подтвержденным интересом (${m.baseDealsCount} первичных + ${m.repeatDealsCount} повторных по коэфф. ${state.ltvCoeff}×) при конверсии отдела продаж ${state.conversionPercent}%`;
       } else {
-        DOM.forecastSubText.textContent = `Из ${m.leadsCount} лидов при конверсии ${state.conversionPercent}% (${m.baseDealsCount} первичных клиентов, каждый совершает еще +${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)})`;
+        DOM.forecastSubText.textContent = `${scPrefix}${m.leadsCount} ${fmt.genitiveLeads(m.leadsCount)} с подтвержденным интересом (${m.baseDealsCount} первичных клиентов, каждый совершает еще +${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)}) при конверсии отдела продаж ${state.conversionPercent}%`;
       }
     } else {
-      DOM.forecastSubText.textContent = `Из ${m.leadsCount} лидов с подтвержденным интересом при конверсии отдела продаж ${state.conversionPercent}%`;
+      DOM.forecastSubText.textContent = `${scPrefix}${m.leadsCount} ${fmt.genitiveLeads(m.leadsCount)} с подтвержденным интересом при конверсии отдела продаж ${state.conversionPercent}%`;
     }
   }
 
@@ -683,7 +807,7 @@ function render() {
 
   // ==================== 3. ТОЧКА БЕЗУБЫТОЧНОСТИ (ПОРОГ ОКУПАЕМОСТИ, НИЖЕ) ====================
   DOM.breakevenBigText.innerHTML = `
-    Достаточно закрыть <span class="highlight-be-deals">всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}</span> из ${m.leadsCount} лидов
+    Достаточно закрыть <span class="highlight-be-deals">всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}</span> из ${m.leadsCount} ${fmt.genitiveLeads(m.leadsCount)}
   `;
   if (DOM.bePillConv) {
     DOM.bePillConv.textContent = `Порог конверсии: ${m.breakEvenConversion}%`;
@@ -740,7 +864,10 @@ function pluralOrders(n) {
 
 // Render Monthly Plan Table (4 columns, clean & readable)
 function renderMonthlyTable(m) {
-  const months = m.tariffData.monthly;
+  const activeScenarioKey = (state.scenario && state.scenario !== 'custom') ? state.scenario : 'medium';
+  const scObj = m.tariffData.scenarios[activeScenarioKey];
+  const months = scObj.monthly;
+  const baseTotal = scObj.baseLeads;
   let html = '';
 
   let accumLeads = 0;
@@ -749,8 +876,13 @@ function renderMonthlyTable(m) {
 
   months.forEach((row, idx) => {
     const isLast = idx === months.length - 1;
-    // Calculate leads per month
-    let monthLeads = Math.round(m.leadsCount * row.ratio);
+    let monthLeads;
+    if (state.scenario !== 'custom') {
+      const mult = state.mailboxesCount / 10;
+      monthLeads = Math.round(row.leads * mult);
+    } else {
+      monthLeads = Math.round(m.leadsCount * (row.leads / baseTotal));
+    }
     if (isLast) {
       monthLeads = m.leadsCount - accumLeads;
     }
@@ -764,17 +896,18 @@ function renderMonthlyTable(m) {
     html += `
       <tr>
         <td><strong>${row.name}</strong></td>
-        <td><strong>${monthLeads} лидов</strong></td>
+        <td><strong>${monthLeads} ${fmt.pluralLeads(monthLeads)}</strong></td>
         <td><strong>${monthDeals} ${pluralDeals(monthDeals)}</strong></td>
         <td>${fmt.rub(monthCost)}</td>
       </tr>
     `;
   });
 
+  const periodTitle = state.tariffMonths === 2 ? '2 МЕСЯЦА (ТЕСТ)' : '4 МЕСЯЦА';
   html += `
     <tr class="total-row">
-      <td><strong>ИТОГО ЗА ${state.tariffMonths} МЕСЯЦА</strong></td>
-      <td><strong>${accumLeads} лидов</strong></td>
+      <td><strong>ИТОГО ЗА ${periodTitle}</strong></td>
+      <td><strong>${accumLeads} ${fmt.pluralLeads(accumLeads)}</strong></td>
       <td><strong>${accumDeals} ${pluralDeals(accumDeals)}</strong></td>
       <td><strong>${fmt.rub(accumCost)}</strong></td>
     </tr>
@@ -790,7 +923,7 @@ function renderConclusions(m) {
       <svg class="conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
       <div>
         <strong>Прогноз продаж и дохода:</strong> при конверсии отдела продаж ${state.conversionPercent}% прогнозируется 
-        <strong>${m.dealsCount} ${pluralDeals(m.dealsCount)}</strong> из ${m.leadsCount} лидов. Это дает 
+        <strong>${m.dealsCount} ${pluralDeals(m.dealsCount)}</strong> из ${m.leadsCount} ${fmt.genitiveLeads(m.leadsCount)}. Это дает 
         <strong>${fmt.rub(m.grossRevenue)} привлеченной выручки</strong> и 
         <strong>+${fmt.rub(m.netProfit)} чистой прибыли</strong> сверх всех затрат на Call-Talk (возврат бюджета в ${m.romiMultiple} раза).
       </div>
@@ -819,31 +952,39 @@ function renderConclusions(m) {
 function copyClientSummary() {
   const m = calculateMetrics();
 
+  const scenarioTitle = {
+    pessimistic: 'Пессимистичный (минимум)',
+    medium: 'Средний (базовый)',
+    optimistic: 'Оптимистичный (максимум)',
+    custom: 'Индивидуальный'
+  }[state.scenario] || 'Средний (базовый)';
+
   const ltvSummary = state.ltvEnabled
     ? (state.ltvMode === 'coeff' ? ` (с учетом LTV: коэфф. ${state.ltvCoeff}×, +${Math.round((state.ltvCoeff - 1) * 100)}% допродаж)` : ` (с учетом LTV: +${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)})`)
     : '';
 
   const text = `
-Расчет результатов проекта Call-Talk:
+Расчет результатов проекта Call-Talk (${scenarioTitle}):
 
 Прогноз продаж:
-• Закрытых сделок: ${m.dealsCount} ${pluralDeals(m.dealsCount)} из ${m.leadsCount} лидов (конверсия ${state.conversionPercent}%)${ltvSummary}
+• Закрытых сделок: ${m.dealsCount} ${pluralDeals(m.dealsCount)} из ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} (конверсия ${state.conversionPercent}%)${ltvSummary}
 • Привлеченная выручка: ${fmt.rub(m.grossRevenue)}
 • Выручка за вычетом Call-Talk: ${fmt.rub(m.grossRemaining)} (остаток на счете клиента)
 • Чистая прибыль сверх ВСЕХ затрат (маржа ${state.marginPercent}%): +${fmt.rub(m.netProfit)}
 • Окупаемость затрат (ROI): ${fmt.pct(m.roi)} (возврат бюджета в ${m.romiMultiple} раза)
 
 Условия проекта:
+• Сценарий прогноза: ${scenarioTitle}
 • Срок договора: ${state.tariffMonths} месяца${state.tariffMonths === 2 ? ' (тест)' : ''}
 • Почтовая инфраструктура: ${state.mailboxesCount} ящиков Яндекс 360
-• Прогноз лидов: ${m.leadsCount} лидов с подтвержденным интересом
+• Прогноз лидов: ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} с подтвержденным интересом
 • Ставка за лид: ${fmt.rub(m.currentLeadPrice)} (отказы — 0 руб.)
 • Фикс за инфраструктуру: ${fmt.rubPerMonth(state.tariffFixPerMonth)} (${fmt.rub(m.fixTotal)} за весь срок)
 • Общий бюджет проекта: ${fmt.rub(m.totalBudget)}
 
 Порог окупаемости (защита от рисков):
 При среднем чеке ${fmt.rub(state.dealCheck)} и марже ${state.marginPercent}% валовая прибыль со сделки составляет ${fmt.rub(m.profitPerDeal)}.
-Для полной окупаемости проекта достаточно закрыть ВСЕГО ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов (порог конверсии всего ${m.breakEvenConversion}%). Все последующие закрытые сделки приносят чистую прибыль.
+Для полной окупаемости проекта достаточно закрыть ВСЕГО ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} (порог конверсии всего ${m.breakEvenConversion}%). Все последующие закрытые сделки приносят чистую прибыль.
   `.trim();
 
   navigator.clipboard.writeText(text).then(() => {
@@ -857,11 +998,18 @@ function copyClientSummary() {
 function copyConclusions() {
   const m = calculateMetrics();
 
+  const scenarioTitle = {
+    pessimistic: 'Пессимистичный',
+    medium: 'Средний',
+    optimistic: 'Оптимистичный',
+    custom: 'Индивидуальный'
+  }[state.scenario] || 'Средний';
+
   const text = `
-Выводы по проекту Call-Talk:
+Выводы по проекту Call-Talk (${scenarioTitle} сценарий):
 
 1. Прогноз продаж: при конверсии ${state.conversionPercent}% прогнозируется ${m.dealsCount} ${pluralDeals(m.dealsCount)}, ${fmt.rub(m.grossRevenue)} выручки, ${fmt.rub(m.grossRemaining)} остатка на счете за вычетом сервиса и +${fmt.rub(m.netProfit)} чистой прибыли сверх всех затрат (ROI ${fmt.pct(m.roi)}).
-2. Защита от рисков: для 100% возврата бюджета достаточно закрыть всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} лидов (порог конверсии всего ${m.breakEvenConversion}%).
+2. Защита от рисков: для 100% возврата бюджета достаточно закрыть всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} (порог конверсии всего ${m.breakEvenConversion}%).
 3. Оплата за результат: фикс покрывает инфраструктуру (${state.mailboxesCount} ящиков Яндекс 360). Лиды оплачиваются только за подтвержденный интерес. Нецелевые ответы — 0 руб.
   `.trim();
 
@@ -888,6 +1036,7 @@ function getQueryString() {
   params.set('m', state.tariffMonths);
   params.set('boxes', state.mailboxesCount);
   params.set('lp', state.leadPrice);
+  params.set('sc', state.scenario);
   params.set('lc', state.leadsCount);
   params.set('check', state.dealCheck);
   params.set('margin', state.marginPercent);
@@ -932,9 +1081,29 @@ function loadUrlParams() {
     if (lp >= 1 && lp <= 1000000) state.leadPrice = lp;
   }
 
+  if (params.has('sc')) {
+    const sc = params.get('sc');
+    if (['pessimistic', 'medium', 'optimistic', 'custom'].includes(sc)) {
+      state.scenario = sc;
+    }
+  }
+
   if (params.has('lc')) {
     const lc = parseInt(params.get('lc'), 10);
-    if (lc > 0 && lc <= 50000) state.leadsCount = lc;
+    if (lc > 0 && lc <= 50000) {
+      state.leadsCount = lc;
+      if (!params.has('sc')) {
+        const pLeads = getScenarioLeads('pessimistic');
+        const mLeads = getScenarioLeads('medium');
+        const oLeads = getScenarioLeads('optimistic');
+        if (lc === pLeads) state.scenario = 'pessimistic';
+        else if (lc === mLeads) state.scenario = 'medium';
+        else if (lc === oLeads) state.scenario = 'optimistic';
+        else state.scenario = 'custom';
+      }
+    }
+  } else {
+    state.leadsCount = getScenarioLeads(state.scenario);
   }
 
   if (params.has('check')) {
