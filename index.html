@@ -170,28 +170,41 @@
 
           <!-- Маржа % -->
           <div class="input-with-slider">
-            <div class="field-header">
-              <span>Маржинальность (чистая маржа)</span>
-              <span id="marginDisplay" class="field-val-badge teal">12%</span>
+            <div class="toggle-row" style="margin-top: 0; margin-bottom: 8px;">
+              <div class="toggle-label-wrap">
+                <span class="toggle-title">Маржинальность (чистая маржа)</span>
+                <span id="marginDisplay" class="field-val-badge teal">12%</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="marginToggle" checked title="Учитывать маржинальность">
+                <span class="slider"></span>
+              </label>
             </div>
-            <div class="input-row">
-              <div class="currency-input-wrapper">
-                <input type="number" id="marginInput" class="number-input" min="1" max="90" value="12">
-                <span class="input-suffix">%</span>
+
+            <div id="marginSubpanel">
+              <div class="input-row">
+                <div class="currency-input-wrapper">
+                  <input type="number" id="marginInput" class="number-input" min="1" max="90" value="12">
+                  <span class="input-suffix">%</span>
+                </div>
+              </div>
+              <input type="range" id="marginSlider" min="5" max="60" step="1" value="12">
+              <div class="quick-pills">
+                <button class="pill-btn pill-margin" data-margin="10">10%</button>
+                <button class="pill-btn pill-margin active" data-margin="12">12%</button>
+                <button class="pill-btn pill-margin" data-margin="15">15%</button>
+                <button class="pill-btn pill-margin" data-margin="20">20%</button>
+                <button class="pill-btn pill-margin" data-margin="25">25%</button>
+                <button class="pill-btn pill-margin" data-margin="30">30%</button>
+                <button class="pill-btn pill-margin" data-margin="50">50%</button>
+              </div>
+              <div class="clean-note" id="marginProfitPerDealNote">
+                Валовая прибыль с 1 сделки: 120 000 руб.
               </div>
             </div>
-            <input type="range" id="marginSlider" min="5" max="60" step="1" value="12">
-            <div class="quick-pills">
-              <button class="pill-btn pill-margin" data-margin="10">10%</button>
-              <button class="pill-btn pill-margin active" data-margin="12">12%</button>
-              <button class="pill-btn pill-margin" data-margin="15">15%</button>
-              <button class="pill-btn pill-margin" data-margin="20">20%</button>
-              <button class="pill-btn pill-margin" data-margin="25">25%</button>
-              <button class="pill-btn pill-margin" data-margin="30">30%</button>
-              <button class="pill-btn pill-margin" data-margin="50">50%</button>
-            </div>
-            <div class="clean-note" id="marginProfitPerDealNote">
-              Валовая прибыль с 1 сделки: 120 000 руб.
+
+            <div id="marginDisabledNote" class="clean-note" style="display: none; margin-top: 6px; background: #FFFFFF; color: var(--text-muted); border: 1px solid var(--border);">
+              Маржинальность не учитывается: расчет ведется по доходу (выручка за вычетом расходов на Call-Talk, без учета себестоимости).
             </div>
           </div>
 
@@ -334,7 +347,7 @@
             </div>
 
             <div class="fin-stat-col">
-              <span class="fin-stat-label">Выручка за вычетом Call-Talk</span>
+              <span class="fin-stat-label" id="heroGrossRemainingLabel">Выручка за вычетом Call-Talk</span>
               <span class="fin-stat-val-huge dark" id="heroGrossRemainingVal">11 625 600 руб.</span>
               <span class="fin-stat-sub" id="heroGrossRemainingSub">Остаток на счете после нашего сервиса</span>
             </div>
@@ -342,7 +355,7 @@
             <div class="fin-stat-col highlight-net-profit">
               <div class="fin-stat-label-row">
                 <span class="fin-stat-label green">Чистая прибыль</span>
-                <span class="net-profit-badge">СВЕРХ МАРЖИ</span>
+                <span class="net-profit-badge" id="heroNetProfitBadge">СВЕРХ МАРЖИ</span>
               </div>
               <span class="fin-stat-val-huge green" id="heroNetProfitVal">+1 065 600 руб.</span>
               <span class="fin-stat-sub green-sub" id="heroNetProfitSub">Чистыми сверх всех затрат и маржи 12%</span>

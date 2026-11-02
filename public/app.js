@@ -62,6 +62,7 @@ const state = {
   scenario: 'medium',       // 'pessimistic' | 'medium' | 'optimistic' | 'custom'
   leadsCount: 78,           // dynamic based on scenario and mailboxes
   dealCheck: 1000000,       // average deal in rubles
+  marginEnabled: true,      // toggle for margin calculation
   marginPercent: 12,        // 12% (strictly 10-12%, max 15%)
   conversionPercent: 15,    // 15%
   ltvEnabled: false,
@@ -160,6 +161,9 @@ const DOM = {
   dealCheckDisplay: document.getElementById('dealCheckDisplay'),
   quickCheckPills: document.querySelectorAll('.pill-btn[data-check]'),
 
+  marginToggle: document.getElementById('marginToggle'),
+  marginSubpanel: document.getElementById('marginSubpanel'),
+  marginDisabledNote: document.getElementById('marginDisabledNote'),
   marginInput: document.getElementById('marginInput'),
   marginSlider: document.getElementById('marginSlider'),
   marginDisplay: document.getElementById('marginDisplay'),
@@ -203,8 +207,10 @@ const DOM = {
   // 5 Financial Stat Cards
   heroRevenueVal: document.getElementById('heroRevenueVal'),
   heroRevenueSub: document.getElementById('heroRevenueSub'),
+  heroGrossRemainingLabel: document.getElementById('heroGrossRemainingLabel'),
   heroGrossRemainingVal: document.getElementById('heroGrossRemainingVal'),
   heroGrossRemainingSub: document.getElementById('heroGrossRemainingSub'),
+  heroNetProfitBadge: document.getElementById('heroNetProfitBadge'),
   heroNetProfitVal: document.getElementById('heroNetProfitVal'),
   heroNetProfitSub: document.getElementById('heroNetProfitSub'),
   heroRoiVal: document.getElementById('heroRoiVal'),
@@ -369,6 +375,14 @@ function bindEvents() {
       render();
     });
   });
+
+  // Margin Toggle & Controls
+  if (DOM.marginToggle) {
+    DOM.marginToggle.addEventListener('change', (e) => {
+      state.marginEnabled = e.target.checked;
+      render();
+    });
+  }
 
   // Margin %
   DOM.marginSlider.addEventListener('input', (e) => {
@@ -565,9 +579,9 @@ function calculateMetrics() {
     }
   }
 
-  // Margin per deal (strictly from margin 10-12-15%)
-  const marginFrac = state.marginPercent / 100;
-  const profitPerDeal = state.dealCheck * marginFrac;
+  // Margin per deal (strictly from margin 10-12-15% if enabled)
+  const marginFrac = state.marginEnabled ? (state.marginPercent / 100) : 1;
+  const profitPerDeal = state.marginEnabled ? (state.dealCheck * marginFrac) : state.dealCheck;
 
   // Call-Talk Costs
   const fixTotal = state.tariffMonths * state.tariffFixPerMonth;
@@ -587,10 +601,12 @@ function calculateMetrics() {
   // 2. Выручка за вычетом сервиса (сколько денег остается на счете клиента за минусом Call-Talk)
   const grossRemaining = Math.max(0, grossRevenue - totalBudget);
 
-  // 3. Валовая прибыль (с учетом чистой маржи)
-  const grossProfit = grossRevenue * marginFrac;
+  // 3. Валовая прибыль (с учетом чистой маржи или по полной выручке)
+  const grossProfit = state.marginEnabled ? (grossRevenue * marginFrac) : grossRevenue;
 
-  // 4. Чистая прибыль (сверх ВСЕХ затрат, себестоимости и бюджета Call-Talk)
+  // 4. Чистая прибыль:
+  // При включенной марже — чистыми сверх всех затрат и себестоимости.
+  // При выключенной марже — доход/выручка за вычетом расходов на Call-Talk.
   const netProfit = grossProfit - totalBudget;
 
   // 5. Окупаемость
@@ -696,7 +712,27 @@ function render() {
     pill.classList.toggle('active', pCheck === state.dealCheck);
   });
 
-  DOM.marginDisplay.textContent = `${state.marginPercent}%`;
+  // Margin UI
+  if (DOM.marginToggle) {
+    DOM.marginToggle.checked = state.marginEnabled;
+  }
+  if (DOM.marginSubpanel) {
+    DOM.marginSubpanel.style.display = state.marginEnabled ? 'block' : 'none';
+  }
+  if (DOM.marginDisabledNote) {
+    DOM.marginDisabledNote.style.display = state.marginEnabled ? 'none' : 'block';
+  }
+
+  if (DOM.marginDisplay) {
+    if (state.marginEnabled) {
+      DOM.marginDisplay.textContent = `${state.marginPercent}%`;
+      DOM.marginDisplay.className = 'field-val-badge teal';
+    } else {
+      DOM.marginDisplay.textContent = 'Не учитывается';
+      DOM.marginDisplay.className = 'field-val-badge muted';
+    }
+  }
+
   if (document.activeElement !== DOM.marginInput) {
     DOM.marginInput.value = state.marginPercent;
   }
@@ -783,17 +819,29 @@ function render() {
   if (DOM.heroRevenueVal) DOM.heroRevenueVal.textContent = fmt.rub(m.grossRevenue);
   if (DOM.heroRevenueSub) DOM.heroRevenueSub.textContent = `${m.dealsCount} ${pluralDeals(m.dealsCount)} по ${fmt.rub(state.dealCheck)}`;
 
-  // 2. Выручка за вычетом сервиса Call-Talk
-  if (DOM.heroGrossRemainingVal) DOM.heroGrossRemainingVal.textContent = fmt.rub(m.grossRemaining);
-  if (DOM.heroGrossRemainingSub) DOM.heroGrossRemainingSub.textContent = `Остаток на счете после оплаты сервиса`;
+  // 2. Выручка за вычетом сервиса Call-Talk / Бюджет Call-Talk
+  if (state.marginEnabled) {
+    if (DOM.heroGrossRemainingLabel) DOM.heroGrossRemainingLabel.textContent = 'Выручка за вычетом Call-Talk';
+    if (DOM.heroGrossRemainingVal) DOM.heroGrossRemainingVal.textContent = fmt.rub(m.grossRemaining);
+    if (DOM.heroGrossRemainingSub) DOM.heroGrossRemainingSub.textContent = 'Остаток на счете после оплаты сервиса';
+  } else {
+    if (DOM.heroGrossRemainingLabel) DOM.heroGrossRemainingLabel.textContent = 'Бюджет Call-Talk';
+    if (DOM.heroGrossRemainingVal) DOM.heroGrossRemainingVal.textContent = fmt.rub(m.totalBudget);
+    if (DOM.heroGrossRemainingSub) DOM.heroGrossRemainingSub.textContent = `${fmt.rub(m.fixTotal)} фикс + ${m.leadsCount} лидов`;
+  }
 
-  // 3. Чистая прибыль сверх ВСЕХ затрат (с учетом маржи) — АКЦЕНТ
+  // 3. Чистая прибыль (сверх ВСЕХ затрат или за вычетом Call-Talk) — АКЦЕНТ
   if (DOM.heroNetProfitVal) {
     DOM.heroNetProfitVal.textContent = `${m.netProfit >= 0 ? '+' : ''}${fmt.rub(m.netProfit)}`;
     DOM.heroNetProfitVal.style.color = m.netProfit >= 0 ? '#059669' : '#DC2626';
   }
+  if (DOM.heroNetProfitBadge) {
+    DOM.heroNetProfitBadge.textContent = state.marginEnabled ? 'СВЕРХ МАРЖИ' : 'БЕЗ СЕБЕСТОИМОСТИ';
+  }
   if (DOM.heroNetProfitSub) {
-    DOM.heroNetProfitSub.textContent = `Чистыми сверх всех затрат и маржи ${state.marginPercent}%`;
+    DOM.heroNetProfitSub.textContent = state.marginEnabled
+      ? `Чистыми сверх всех затрат и маржи ${state.marginPercent}%`
+      : `Выручка за вычетом расходов на Call-Talk (без учета себестоимости)`;
   }
 
   // 4. Окупаемость
@@ -830,13 +878,22 @@ function render() {
     DOM.beLabelProfitDeals.style.display = 'none';
   }
 
-  DOM.breakevenExplanationText.innerHTML = `
-    При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> и марже <strong>${state.marginPercent}%</strong> 
-    валовая прибыль со сделки составляет <strong>${fmt.rub(m.profitPerDeal)}</strong> 
-    Все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются с 
-    <strong>${m.dealsToBreakEven}-й закрытой сделки</strong>. 
-    ${m.profitDealsCount > 0 ? `Оставшиеся <strong>${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие закрытые сделки приносят чистую прибыль.`}
-  `;
+  if (state.marginEnabled) {
+    DOM.breakevenExplanationText.innerHTML = `
+      При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> и марже <strong>${state.marginPercent}%</strong> 
+      валовая прибыль со сделки составляет <strong>${fmt.rub(m.profitPerDeal)}</strong>. 
+      Все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются с 
+      <strong>${m.dealsToBreakEven}-й закрытой сделки</strong>. 
+      ${m.profitDealsCount > 0 ? `Оставшиеся <strong>${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие закрытые сделки приносят чистую прибыль.`}
+    `;
+  } else {
+    DOM.breakevenExplanationText.innerHTML = `
+      При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> (без вычета себестоимости) 
+      все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются с 
+      <strong>${m.dealsToBreakEven}-й закрытой сделки</strong>. 
+      ${m.profitDealsCount > 0 ? `Оставшиеся <strong>${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие закрытые сделки приносят чистую прибыль.`}
+    `;
+  }
 
   // ==================== 4. ВЫВОДЫ (ПО ИЛЬЯХОВУ) ====================
   renderConclusions(m);
@@ -920,6 +977,10 @@ function renderMonthlyTable(m) {
 
 // Render Conclusions (Maxim Ilyakhov Standard: clean, calm, factual)
 function renderConclusions(m) {
+  const profitNote = state.marginEnabled
+    ? `сверх всех затрат на Call-Talk и маржи ${state.marginPercent}%`
+    : `за вычетом расходов на Call-Talk (без учета себестоимости)`;
+
   DOM.conclusionsList.innerHTML = `
     <div class="conclusion-item">
       <svg class="conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
@@ -927,7 +988,7 @@ function renderConclusions(m) {
         <strong>Прогноз продаж и дохода:</strong> при конверсии отдела продаж ${state.conversionPercent}% прогнозируется 
         <strong>${m.dealsCount} ${pluralDeals(m.dealsCount)}</strong> из ${m.leadsCount} ${fmt.genitiveLeads(m.leadsCount)}. Это дает 
         <strong>${fmt.rub(m.grossRevenue)} привлеченной выручки</strong> и 
-        <strong>+${fmt.rub(m.netProfit)} чистой прибыли</strong> сверх всех затрат на Call-Talk (возврат бюджета в ${m.romiMultiple} раза).
+        <strong>+${fmt.rub(m.netProfit)} чистой прибыли</strong> ${profitNote} (возврат бюджета в ${m.romiMultiple} раза).
       </div>
     </div>
 
@@ -965,6 +1026,14 @@ function copyClientSummary() {
     ? (state.ltvMode === 'coeff' ? ` (с учетом LTV: коэфф. ${state.ltvCoeff}×, +${Math.round((state.ltvCoeff - 1) * 100)}% допродаж)` : ` (с учетом LTV: +${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)})`)
     : '';
 
+  const netProfitLine = state.marginEnabled
+    ? `• Чистая прибыль сверх ВСЕХ затрат (маржа ${state.marginPercent}%): +${fmt.rub(m.netProfit)}`
+    : `• Чистая прибыль за вычетом Call-Talk (без себестоимости): +${fmt.rub(m.netProfit)}`;
+
+  const beDealText = state.marginEnabled
+    ? `При среднем чеке ${fmt.rub(state.dealCheck)} и марже ${state.marginPercent}% валовая прибыль со сделки составляет ${fmt.rub(m.profitPerDeal)}.`
+    : `При среднем чеке ${fmt.rub(state.dealCheck)} (расчет по выручке без вычета себестоимости).`;
+
   const text = `
 Расчет результатов проекта Call-Talk (${scenarioTitle}):
 
@@ -972,7 +1041,7 @@ function copyClientSummary() {
 • Закрытых сделок: ${m.dealsCount} ${pluralDeals(m.dealsCount)} из ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} (конверсия ${state.conversionPercent}%)${ltvSummary}
 • Привлеченная выручка: ${fmt.rub(m.grossRevenue)}
 • Выручка за вычетом Call-Talk: ${fmt.rub(m.grossRemaining)} (остаток на счете клиента)
-• Чистая прибыль сверх ВСЕХ затрат (маржа ${state.marginPercent}%): +${fmt.rub(m.netProfit)}
+${netProfitLine}
 • Окупаемость затрат (ROI): ${fmt.pct(m.roi)} (возврат бюджета в ${m.romiMultiple} раза)
 
 Условия проекта:
@@ -985,7 +1054,7 @@ function copyClientSummary() {
 • Общий бюджет проекта: ${fmt.rub(m.totalBudget)}
 
 Порог окупаемости (защита от рисков):
-При среднем чеке ${fmt.rub(state.dealCheck)} и марже ${state.marginPercent}% валовая прибыль со сделки составляет ${fmt.rub(m.profitPerDeal)}.
+${beDealText}
 Для полной окупаемости проекта достаточно закрыть ВСЕГО ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} (порог конверсии всего ${m.breakEvenConversion}%). Все последующие закрытые сделки приносят чистую прибыль.
 
 * Расчет носит предварительный ориентировочный характер и не является публичной офертой. Фактическое количество обращений, конверсия и скорость сделок зависят от ниши, среднего чека, емкости адресной базы и портрета целевой аудитории. Точный прогноз и стоимость лида согласовываются и закрепляются в договоре до старта проекта.
@@ -1009,10 +1078,18 @@ function copyConclusions() {
     custom: 'Индивидуальный'
   }[state.scenario] || 'Средний';
 
+  const profitConclusionNote = state.marginEnabled
+    ? `+${fmt.rub(m.netProfit)} чистой прибыли сверх всех затрат (маржа ${state.marginPercent}%, ROI ${fmt.pct(m.roi)})`
+    : `+${fmt.rub(m.netProfit)} чистой прибыли за вычетом Call-Talk (без себестоимости, ROI ${fmt.pct(m.roi)})`;
+
+  const remainingNote = state.marginEnabled
+    ? `${fmt.rub(m.grossRemaining)} остатка на счете за вычетом сервиса и `
+    : '';
+
   const text = `
 Выводы по проекту Call-Talk (${scenarioTitle} сценарий):
 
-1. Прогноз продаж: при конверсии ${state.conversionPercent}% прогнозируется ${m.dealsCount} ${pluralDeals(m.dealsCount)}, ${fmt.rub(m.grossRevenue)} выручки, ${fmt.rub(m.grossRemaining)} остатка на счете за вычетом сервиса и +${fmt.rub(m.netProfit)} чистой прибыли сверх всех затрат (ROI ${fmt.pct(m.roi)}).
+1. Прогноз продаж: при конверсии ${state.conversionPercent}% прогнозируется ${m.dealsCount} ${pluralDeals(m.dealsCount)}, ${fmt.rub(m.grossRevenue)} выручки, ${remainingNote}${profitConclusionNote}.
 2. Защита от рисков: для 100% возврата бюджета достаточно закрыть всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} (порог конверсии всего ${m.breakEvenConversion}%).
 3. Оплата за результат: фикс покрывает инфраструктуру (${state.mailboxesCount} ящиков Яндекс 360). Лиды оплачиваются только за подтвержденный интерес. Нецелевые ответы — 0 руб.
   `.trim();
@@ -1043,6 +1120,9 @@ function getQueryString() {
   params.set('sc', state.scenario);
   params.set('lc', state.leadsCount);
   params.set('check', state.dealCheck);
+  if (!state.marginEnabled) {
+    params.set('nomargin', '1');
+  }
   params.set('margin', state.marginPercent);
   params.set('conv', state.conversionPercent);
   if (state.ltvEnabled) {
@@ -1108,6 +1188,10 @@ function loadUrlParams() {
     }
   } else {
     state.leadsCount = getScenarioLeads(state.scenario);
+  }
+
+  if (params.has('nomargin') && params.get('nomargin') === '1') {
+    state.marginEnabled = false;
   }
 
   if (params.has('check')) {
