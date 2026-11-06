@@ -65,7 +65,7 @@ const state = {
   marginEnabled: true,      // toggle for margin calculation
   marginPercent: 12,        // 12% (strictly 10-12%, max 15%)
   conversionPercent: 15,    // 15%
-  ltvEnabled: false,
+  ltvEnabled: true,         // enabled by default on coefficient mode
   ltvMode: 'coeff',         // 'coeff' (разовые покупки / коэффициент) or 'sub' (подписка)
   ltvCoeff: 1.3,            // 1.3 (e.g. 10 deals -> +3 repeat = 13 deals)
   ltvRepeatDeals: 12        // +12 repeat deals in subscription mode (12 заказов в год)
@@ -1125,7 +1125,9 @@ function getQueryString() {
   }
   params.set('margin', state.marginPercent);
   params.set('conv', state.conversionPercent);
-  if (state.ltvEnabled) {
+  if (!state.ltvEnabled) {
+    params.set('noltv', '1');
+  } else {
     params.set('ltv', '1');
     params.set('ltvm', state.ltvMode);
     if (state.ltvMode === 'coeff') {
@@ -1209,20 +1211,23 @@ function loadUrlParams() {
     if (conv >= 1 && conv <= 60) state.conversionPercent = conv;
   }
 
-  if (params.has('ltv') && params.get('ltv') === '1') {
+  if ((params.has('noltv') && params.get('noltv') === '1') || (params.has('ltv') && params.get('ltv') === '0')) {
+    state.ltvEnabled = false;
+  } else if (params.has('ltv') && params.get('ltv') === '1') {
     state.ltvEnabled = true;
-    if (params.has('ltvm')) {
-      const mode = params.get('ltvm');
-      if (mode === 'coeff' || mode === 'sub') state.ltvMode = mode;
-    }
-    if (params.has('ltvc')) {
-      const c = parseFloat(params.get('ltvc'));
-      if (c >= 1.0 && c <= 5.0) state.ltvCoeff = c;
-    }
-    if (params.has('rep')) {
-      const rep = parseInt(params.get('rep'), 10);
-      if (rep >= 1 && rep <= 30) state.ltvRepeatDeals = rep;
-    }
+  }
+
+  if (params.has('ltvm')) {
+    const mode = params.get('ltvm');
+    if (mode === 'coeff' || mode === 'sub') state.ltvMode = mode;
+  }
+  if (params.has('ltvc')) {
+    const c = parseFloat(params.get('ltvc'));
+    if (c >= 1.0 && c <= 5.0) state.ltvCoeff = c;
+  }
+  if (params.has('rep')) {
+    const rep = parseInt(params.get('rep'), 10);
+    if (rep >= 1 && rep <= 30) state.ltvRepeatDeals = rep;
   }
 }
 
