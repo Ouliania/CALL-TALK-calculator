@@ -588,11 +588,15 @@ function calculateMetrics() {
   const variableTotal = leadsCount * currentLeadPrice;
   const totalBudget = fixTotal + variableTotal;
 
-  // Break-even
-  const exactDealsToBreakEven = profitPerDeal > 0 ? (totalBudget / profitPerDeal) : 0;
-  const dealsToBreakEven = Math.max(1, Math.ceil(exactDealsToBreakEven));
-  const breakEvenConversion = leadsCount > 0 ? ((exactDealsToBreakEven / leadsCount) * 100).toFixed(1) : '0.0';
-  const profitDealsCount = Math.max(0, dealsCount - dealsToBreakEven);
+  // Break-even (с учетом LTV: в подписной модели и при повторных заказах каждый клиент приносит profitPerClient)
+  const ltvMult = state.ltvEnabled ? ltvFactor : 1;
+  const ltvRevenuePerClient = state.dealCheck * ltvMult;
+  const profitPerClient = profitPerDeal * ltvMult;
+
+  const exactClientsToBreakEven = profitPerClient > 0 ? (totalBudget / profitPerClient) : 0;
+  const clientsToBreakEven = Math.max(1, Math.ceil(exactClientsToBreakEven));
+  const breakEvenConversion = leadsCount > 0 ? ((exactClientsToBreakEven / leadsCount) * 100).toFixed(1) : '0.0';
+  const profitClientsCount = Math.max(0, baseDealsCount - clientsToBreakEven);
 
   // Financial totals:
   // 1. Привлеченная выручка (все сделки * чек)
@@ -622,12 +626,16 @@ function calculateMetrics() {
     repeatDealsCount,
     ltvFactor,
     profitPerDeal,
+    profitPerClient,
+    ltvRevenuePerClient,
     fixTotal,
     variableTotal,
     totalBudget,
-    dealsToBreakEven,
+    clientsToBreakEven,
+    dealsToBreakEven: clientsToBreakEven,
     breakEvenConversion,
-    profitDealsCount,
+    profitClientsCount,
+    profitDealsCount: profitClientsCount,
     grossRevenue,
     grossRemaining,
     grossProfit,
@@ -856,43 +864,95 @@ function render() {
   renderMonthlyTable(m);
 
   // ==================== 3. ТОЧКА БЕЗУБЫТОЧНОСТИ (ПОРОГ ОКУПАЕМОСТИ, НИЖЕ) ====================
-  DOM.breakevenBigText.innerHTML = `
-    Достаточно закрыть <span class="highlight-be-deals">всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}</span> из ${m.leadsCount} ${fmt.genitiveLeads(m.leadsCount)}
-  `;
+  if (state.ltvEnabled && state.ltvMode === 'sub') {
+    DOM.breakevenBigText.innerHTML = `
+      Достаточно закрыть <span class="highlight-be-deals">всего ${m.clientsToBreakEven} ${pluralClientsAcc(m.clientsToBreakEven)} на регулярные поставки</span> из ${m.leadsCount} ${fmt.genitiveLeads(m.leadsCount)}
+    `;
+  } else if (state.ltvEnabled && state.ltvMode === 'coeff') {
+    DOM.breakevenBigText.innerHTML = `
+      Достаточно закрыть <span class="highlight-be-deals">всего ${m.clientsToBreakEven} ${pluralClientsAcc(m.clientsToBreakEven)}</span> из ${m.leadsCount} ${fmt.genitiveLeads(m.leadsCount)}
+    `;
+  } else {
+    DOM.breakevenBigText.innerHTML = `
+      Достаточно закрыть <span class="highlight-be-deals">всего ${m.clientsToBreakEven} ${pluralDealsAcc(m.clientsToBreakEven)}</span> из ${m.leadsCount} ${fmt.genitiveLeads(m.leadsCount)}
+    `;
+  }
   if (DOM.bePillConv) {
     DOM.bePillConv.textContent = `Порог конверсии: ${m.breakEvenConversion}%`;
   }
 
-  // Scale
-  const beRatio = Math.min(100, Math.max(8, Math.round((m.dealsToBreakEven / Math.max(m.dealsCount, m.dealsToBreakEven)) * 100)));
+  // Scale (сравниваем клиентов для окупаемости с базовым числом клиентов)
+  const beRatio = Math.min(100, Math.max(8, Math.round((m.clientsToBreakEven / Math.max(m.baseDealsCount, m.clientsToBreakEven)) * 100)));
   const profitRatio = Math.max(0, 100 - beRatio);
   DOM.beProgressFillBe.style.width = `${beRatio}%`;
   DOM.beProgressFillProfit.style.width = `${profitRatio}%`;
 
-  DOM.beLabelBreakEven.textContent = `🎯 ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} окупают бюджет (${fmt.rub(m.totalBudget)})`;
-  if (m.profitDealsCount > 0) {
-    DOM.beLabelProfitDeals.textContent = `💰 Еще ${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)} — чистая прибыль`;
-    DOM.beLabelProfitDeals.style.display = 'inline';
+  if (state.ltvEnabled && state.ltvMode === 'sub') {
+    DOM.beLabelBreakEven.textContent = `🎯 ${m.clientsToBreakEven} ${pluralClientsNom(m.clientsToBreakEven)} на подписку окупают бюджет (${fmt.rub(m.totalBudget)})`;
+    if (m.profitClientsCount > 0) {
+      DOM.beLabelProfitDeals.textContent = `💰 Еще ${m.profitClientsCount} ${pluralClientsNom(m.profitClientsCount)}, чистая прибыль`;
+      DOM.beLabelProfitDeals.style.display = 'inline';
+    } else {
+      DOM.beLabelProfitDeals.textContent = '';
+      DOM.beLabelProfitDeals.style.display = 'none';
+    }
+  } else if (state.ltvEnabled && state.ltvMode === 'coeff') {
+    DOM.beLabelBreakEven.textContent = `🎯 ${m.clientsToBreakEven} ${pluralClientsNom(m.clientsToBreakEven)} окупают бюджет (${fmt.rub(m.totalBudget)})`;
+    if (m.profitClientsCount > 0) {
+      DOM.beLabelProfitDeals.textContent = `💰 Еще ${m.profitClientsCount} ${pluralClientsNom(m.profitClientsCount)}, чистая прибыль`;
+      DOM.beLabelProfitDeals.style.display = 'inline';
+    } else {
+      DOM.beLabelProfitDeals.textContent = '';
+      DOM.beLabelProfitDeals.style.display = 'none';
+    }
   } else {
-    DOM.beLabelProfitDeals.textContent = '';
-    DOM.beLabelProfitDeals.style.display = 'none';
+    DOM.beLabelBreakEven.textContent = `🎯 ${m.clientsToBreakEven} ${pluralDeals(m.clientsToBreakEven)} окупают бюджет (${fmt.rub(m.totalBudget)})`;
+    if (m.profitClientsCount > 0) {
+      DOM.beLabelProfitDeals.textContent = `💰 Еще ${m.profitClientsCount} ${pluralDeals(m.profitClientsCount)}, чистая прибыль`;
+      DOM.beLabelProfitDeals.style.display = 'inline';
+    } else {
+      DOM.beLabelProfitDeals.textContent = '';
+      DOM.beLabelProfitDeals.style.display = 'none';
+    }
   }
 
-  if (state.marginEnabled) {
-    DOM.breakevenExplanationText.innerHTML = `
-      При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> и марже <strong>${state.marginPercent}%</strong> 
-      валовая прибыль со сделки составляет <strong>${fmt.rub(m.profitPerDeal)}</strong>. 
-      Все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются с 
-      <strong>${m.dealsToBreakEven}-й закрытой сделки</strong>. 
-      ${m.profitDealsCount > 0 ? `Оставшиеся <strong>${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие закрытые сделки приносят чистую прибыль.`}
-    `;
+  if (state.ltvEnabled && state.ltvMode === 'sub') {
+    if (state.marginEnabled) {
+      DOM.breakevenExplanationText.innerHTML = `
+        При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> и регулярных поставках (+${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)} в год) LTV одного клиента составляет <strong>${fmt.rub(m.ltvRevenuePerClient)}</strong> (валовая прибыль <strong>${fmt.rub(m.profitPerClient)}</strong> при марже ${state.marginPercent}%). Все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются <strong>всего с ${m.clientsToBreakEven}-го клиента на подписку</strong>. ${m.profitClientsCount > 0 ? `Оставшиеся <strong>${m.profitClientsCount} ${pluralClientsNom(m.profitClientsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие клиенты приносят чистую прибыль.`}
+      `;
+    } else {
+      DOM.breakevenExplanationText.innerHTML = `
+        При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> и регулярных поставках (+${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)} в год) LTV одного клиента составляет <strong>${fmt.rub(m.ltvRevenuePerClient)}</strong> выручки (без вычета себестоимости). Все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются <strong>всего с ${m.clientsToBreakEven}-го клиента на подписку</strong>. ${m.profitClientsCount > 0 ? `Оставшиеся <strong>${m.profitClientsCount} ${pluralClientsNom(m.profitClientsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие клиенты приносят чистую прибыль.`}
+      `;
+    }
+  } else if (state.ltvEnabled && state.ltvMode === 'coeff') {
+    if (state.marginEnabled) {
+      DOM.breakevenExplanationText.innerHTML = `
+        При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> и повторных покупках (коэфф. ${state.ltvCoeff}×) LTV одного клиента составляет <strong>${fmt.rub(m.ltvRevenuePerClient)}</strong> (валовая прибыль <strong>${fmt.rub(m.profitPerClient)}</strong> при марже ${state.marginPercent}%). Все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются <strong>всего с ${m.clientsToBreakEven}-го клиента</strong>. ${m.profitClientsCount > 0 ? `Оставшиеся <strong>${m.profitClientsCount} ${pluralClientsNom(m.profitClientsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие клиенты приносят чистую прибыль.`}
+      `;
+    } else {
+      DOM.breakevenExplanationText.innerHTML = `
+        При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> и повторных покупках (коэфф. ${state.ltvCoeff}×) LTV одного клиента составляет <strong>${fmt.rub(m.ltvRevenuePerClient)}</strong> выручки (без вычета себестоимости). Все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются <strong>всего с ${m.clientsToBreakEven}-го клиента</strong>. ${m.profitClientsCount > 0 ? `Оставшиеся <strong>${m.profitClientsCount} ${pluralClientsNom(m.profitClientsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие клиенты приносят чистую прибыль.`}
+      `;
+    }
   } else {
-    DOM.breakevenExplanationText.innerHTML = `
-      При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> (без вычета себестоимости) 
-      все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются с 
-      <strong>${m.dealsToBreakEven}-й закрытой сделки</strong>. 
-      ${m.profitDealsCount > 0 ? `Оставшиеся <strong>${m.profitDealsCount} ${pluralDeals(m.profitDealsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие закрытые сделки приносят чистую прибыль.`}
-    `;
+    if (state.marginEnabled) {
+      DOM.breakevenExplanationText.innerHTML = `
+        При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> и марже <strong>${state.marginPercent}%</strong> 
+        валовая прибыль со сделки составляет <strong>${fmt.rub(m.profitPerDeal)}</strong>. 
+        Все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются с 
+        <strong>${m.clientsToBreakEven}-й закрытой сделки</strong>. 
+        ${m.profitClientsCount > 0 ? `Оставшиеся <strong>${m.profitClientsCount} ${pluralDeals(m.profitClientsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие закрытые сделки приносят чистую прибыль.`}
+      `;
+    } else {
+      DOM.breakevenExplanationText.innerHTML = `
+        При среднем чеке <strong>${fmt.rub(state.dealCheck)}</strong> (без вычета себестоимости) 
+        все расходы на проект (<strong>${fmt.rub(m.totalBudget)}</strong>) окупаются с 
+        <strong>${m.clientsToBreakEven}-й закрытой сделки</strong>. 
+        ${m.profitClientsCount > 0 ? `Оставшиеся <strong>${m.profitClientsCount} ${pluralDeals(m.profitClientsCount)}</strong> первого цикла приносят чистую прибыль.` : `Все последующие закрытые сделки приносят чистую прибыль.`}
+      `;
+    }
   }
 
   // ==================== 4. ВЫВОДЫ (ПО ИЛЬЯХОВУ) ====================
@@ -910,6 +970,33 @@ function pluralDeals(n) {
   if (mod10 === 1) return 'сделка';
   if (mod10 >= 2 && mod10 <= 4) return 'сделки';
   return 'сделок';
+}
+
+function pluralDealsAcc(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 19) return 'сделок';
+  if (mod10 === 1) return 'сделку';
+  if (mod10 >= 2 && mod10 <= 4) return 'сделки';
+  return 'сделок';
+}
+
+function pluralClientsNom(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 19) return 'клиентов';
+  if (mod10 === 1) return 'клиент';
+  if (mod10 >= 2 && mod10 <= 4) return 'клиента';
+  return 'клиентов';
+}
+
+function pluralClientsAcc(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 19) return 'клиентов';
+  if (mod10 === 1) return 'клиента';
+  if (mod10 >= 2 && mod10 <= 4) return 'клиента';
+  return 'клиентов';
 }
 
 function pluralOrders(n) {
@@ -981,6 +1068,12 @@ function renderConclusions(m) {
     ? `сверх всех затрат на Call-Talk и маржи ${state.marginPercent}%`
     : `за вычетом расходов на Call-Talk (без учета себестоимости)`;
 
+  const targetLabel = (state.ltvEnabled && state.ltvMode === 'sub')
+    ? `всего ${m.clientsToBreakEven} ${pluralClientsAcc(m.clientsToBreakEven)} на подписку`
+    : state.ltvEnabled
+    ? `всего ${m.clientsToBreakEven} ${pluralClientsAcc(m.clientsToBreakEven)}`
+    : `всего ${m.clientsToBreakEven} ${pluralDealsAcc(m.clientsToBreakEven)}`;
+
   DOM.conclusionsList.innerHTML = `
     <div class="conclusion-item">
       <svg class="conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
@@ -996,7 +1089,7 @@ function renderConclusions(m) {
       <svg class="conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
       <div>
         <strong>Защита от рисков (порог окупаемости):</strong> чтобы полностью вернуть бюджет (${fmt.rub(m.totalBudget)}), достаточно закрыть 
-        <strong>всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)}</strong> (конверсия <strong>всего ${m.breakEvenConversion}%</strong>). 
+        <strong>${targetLabel}</strong> (конверсия <strong>всего ${m.breakEvenConversion}%</strong>). 
         Проект окупается, даже если ${Math.round(100 - parseFloat(m.breakEvenConversion))}% лидов ответят отказом.
       </div>
     </div>
@@ -1005,7 +1098,7 @@ function renderConclusions(m) {
       <svg class="conclusion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
       <div>
         <strong>Оплата за результат:</strong> фикс покрывает подготовку и инфраструктуру на базе <strong>${state.mailboxesCount} ящиков Яндекс 360</strong>. 
-        Лиды оплачиваются только при подтвержденном интересе ЛПР. Нецелевые контакты — 0 руб.
+        Лиды оплачиваются только при подтвержденном интересе ЛПР. Нецелевые контакты, 0 руб.
       </div>
     </div>
   `;
@@ -1030,9 +1123,19 @@ function copyClientSummary() {
     ? `• Чистая прибыль сверх ВСЕХ затрат (маржа ${state.marginPercent}%): +${fmt.rub(m.netProfit)}`
     : `• Чистая прибыль за вычетом Call-Talk (без себестоимости): +${fmt.rub(m.netProfit)}`;
 
-  const beDealText = state.marginEnabled
+  const beDealText = (state.ltvEnabled && state.ltvMode === 'sub')
+    ? `При среднем чеке ${fmt.rub(state.dealCheck)} и регулярных поставках (+${state.ltvRepeatDeals} ${pluralOrders(state.ltvRepeatDeals)} в год) LTV одного клиента составляет ${fmt.rub(m.ltvRevenuePerClient)}${state.marginEnabled ? ` (валовая прибыль ${fmt.rub(m.profitPerClient)} при марже ${state.marginPercent}%)` : ''}.`
+    : (state.ltvEnabled && state.ltvMode === 'coeff')
+    ? `При среднем чеке ${fmt.rub(state.dealCheck)} и повторных покупках (коэфф. ${state.ltvCoeff}×) LTV одного клиента составляет ${fmt.rub(m.ltvRevenuePerClient)}${state.marginEnabled ? ` (валовая прибыль ${fmt.rub(m.profitPerClient)} при марже ${state.marginPercent}%)` : ''}.`
+    : state.marginEnabled
     ? `При среднем чеке ${fmt.rub(state.dealCheck)} и марже ${state.marginPercent}% валовая прибыль со сделки составляет ${fmt.rub(m.profitPerDeal)}.`
     : `При среднем чеке ${fmt.rub(state.dealCheck)} (расчет по выручке без вычета себестоимости).`;
+
+  const beTargetSummary = (state.ltvEnabled && state.ltvMode === 'sub')
+    ? `ВСЕГО ${m.clientsToBreakEven} ${pluralClientsAcc(m.clientsToBreakEven)} на подписку`
+    : state.ltvEnabled
+    ? `ВСЕГО ${m.clientsToBreakEven} ${pluralClientsAcc(m.clientsToBreakEven)}`
+    : `ВСЕГО ${m.clientsToBreakEven} ${pluralDealsAcc(m.clientsToBreakEven)}`;
 
   const text = `
 Расчет результатов проекта Call-Talk (${scenarioTitle}):
@@ -1049,13 +1152,13 @@ ${netProfitLine}
 • Срок договора: ${state.tariffMonths} месяца${state.tariffMonths === 2 ? ' (тест)' : ''}
 • Почтовая инфраструктура: ${state.mailboxesCount} ящиков Яндекс 360
 • Прогноз лидов: ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} с подтвержденным интересом
-• Ставка за лид: ${fmt.rub(m.currentLeadPrice)} (отказы — 0 руб.)
+• Ставка за лид: ${fmt.rub(m.currentLeadPrice)} (отказы, 0 руб.)
 • Фикс за инфраструктуру: ${fmt.rubPerMonth(state.tariffFixPerMonth)} (${fmt.rub(m.fixTotal)} за весь срок)
 • Общий бюджет проекта: ${fmt.rub(m.totalBudget)}
 
 Порог окупаемости (защита от рисков):
 ${beDealText}
-Для полной окупаемости проекта достаточно закрыть ВСЕГО ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} (порог конверсии всего ${m.breakEvenConversion}%). Все последующие закрытые сделки приносят чистую прибыль.
+Для полной окупаемости проекта достаточно закрыть ${beTargetSummary} из ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} (порог конверсии всего ${m.breakEvenConversion}%). Все последующие закрытые сделки приносят чистую прибыль.
 
 * Расчет носит предварительный ориентировочный характер и не является публичной офертой. Фактическое количество обращений, конверсия и скорость сделок зависят от ниши, среднего чека, емкости адресной базы и портрета целевой аудитории. Точный прогноз и стоимость лида согласовываются и закрепляются в договоре до старта проекта.
   `.trim();
@@ -1086,12 +1189,18 @@ function copyConclusions() {
     ? `${fmt.rub(m.grossRemaining)} остатка на счете за вычетом сервиса и `
     : '';
 
+  const targetLabel = (state.ltvEnabled && state.ltvMode === 'sub')
+    ? `всего ${m.clientsToBreakEven} ${pluralClientsAcc(m.clientsToBreakEven)} на подписку`
+    : state.ltvEnabled
+    ? `всего ${m.clientsToBreakEven} ${pluralClientsAcc(m.clientsToBreakEven)}`
+    : `всего ${m.clientsToBreakEven} ${pluralDealsAcc(m.clientsToBreakEven)}`;
+
   const text = `
 Выводы по проекту Call-Talk (${scenarioTitle} сценарий):
 
 1. Прогноз продаж: при конверсии ${state.conversionPercent}% прогнозируется ${m.dealsCount} ${pluralDeals(m.dealsCount)}, ${fmt.rub(m.grossRevenue)} выручки, ${remainingNote}${profitConclusionNote}.
-2. Защита от рисков: для 100% возврата бюджета достаточно закрыть всего ${m.dealsToBreakEven} ${pluralDeals(m.dealsToBreakEven)} из ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} (порог конверсии всего ${m.breakEvenConversion}%).
-3. Оплата за результат: фикс покрывает инфраструктуру (${state.mailboxesCount} ящиков Яндекс 360). Лиды оплачиваются только за подтвержденный интерес. Нецелевые ответы — 0 руб.
+2. Защита от рисков: для 100% возврата бюджета достаточно закрыть ${targetLabel} из ${m.leadsCount} ${fmt.pluralLeads(m.leadsCount)} (порог конверсии всего ${m.breakEvenConversion}%).
+3. Оплата за результат: фикс покрывает инфраструктуру (${state.mailboxesCount} ящиков Яндекс 360). Лиды оплачиваются только за подтвержденный интерес. Нецелевые ответы, 0 руб.
   `.trim();
 
   navigator.clipboard.writeText(text).then(() => {
